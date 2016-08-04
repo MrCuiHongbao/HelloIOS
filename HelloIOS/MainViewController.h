@@ -6,8 +6,8 @@
 //  Copyright © 2016年 younger. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-@interface MainViewController : NSObject
+@interface MainViewController : UIViewController
 
 @end

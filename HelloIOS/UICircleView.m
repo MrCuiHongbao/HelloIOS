@@ -10,4 +10,11 @@
 
 @implementation UICircleView
 
+- (UICircleView *)initwithFrame:(CGRect)frame
+{
+	self.frame = frame;
+	
+	return self;
+}
+
 @end

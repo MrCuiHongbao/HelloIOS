@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
 		1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FA1CC2662600A5FC44 /* ViewController.m */; };
@@ -14,9 +15,12 @@
 		1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FF1CC2662600A5FC44 /* HelloIOS.xcdatamodeld */; };
 		1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6021CC2662600A5FC44 /* Assets.xcassets */; };
 		1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */; };
+		1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E60E1CC2765100A5FC44 /* UICircleView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1E54A8751D53896F004ABE82 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
+		1E54A8761D53896F004ABE82 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		1EC2E5F01CC2662600A5FC44 /* HelloIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1EC2E5F41CC2662600A5FC44 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -28,6 +32,8 @@
 		1EC2E6021CC2662600A5FC44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1EC2E6051CC2662600A5FC44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1EC2E6071CC2662600A5FC44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1EC2E60D1CC2765100A5FC44 /* UICircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircleView.h; sourceTree = "<group>"; };
+		1EC2E60E1CC2765100A5FC44 /* UICircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircleView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +47,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1E54A8781D5389CD004ABE82 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				1E54A8751D53896F004ABE82 /* MainViewController.h */,
+				1E54A8761D53896F004ABE82 /* MainViewController.m */,
+			);
+			name = Demo;
+			sourceTree = "<group>";
+		};
 		1EC2E5E71CC2662600A5FC44 = {
 			isa = PBXGroup;
 			children = (
@@ -48,6 +63,7 @@
 				1EC2E5F11CC2662600A5FC44 /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		1EC2E5F11CC2662600A5FC44 /* Products */ = {
 			isa = PBXGroup;
@@ -60,6 +76,9 @@
 		1EC2E5F21CC2662600A5FC44 /* HelloIOS */ = {
 			isa = PBXGroup;
 			children = (
+				1E54A8781D5389CD004ABE82 /* Demo */,
+				1EC2E60D1CC2765100A5FC44 /* UICircleView.h */,
+				1EC2E60E1CC2765100A5FC44 /* UICircleView.m */,
 				1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */,
 				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
 				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
@@ -153,6 +172,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */,
+				1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */,
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
@@ -305,6 +326,7 @@
 				1EC2E60C1CC2662600A5FC44 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
