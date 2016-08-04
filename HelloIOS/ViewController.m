@@ -29,8 +29,8 @@
 	_btnView = [UIButton buttonWithType:UIButtonTypeSystem];
 	[_btnView setFrame:CGRectMake(100, 100, 200, 60)];
 	[_btnView setBackgroundColor:[UIColor redColor]];
-	[_btnView addTarget:self action:@selector(clickBtn) forControlEvents:UIControlEventTouchUpInside];
-	[_btnView setTitle:@"MainViewController" forState:UIControlStateNormal];
+	[_btnView addTarget:self action:@selector(clickBtn:) forControlEvents:UIControlEventTouchUpInside];
+	[_btnView setTitle:@"Next" forState:UIControlStateNormal];
 	[container addSubview:_btnView];
 }
 
@@ -40,15 +40,28 @@
 	
 	self.title = @"Root";
 	[self.navigationController.navigationBar setBarTintColor:[UIColor purpleColor]];
-	
+	self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(clickBtn:)];
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(clickBtn:)];
+	[self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
 }
 
-- (void)clickBtn
+- (void)clickBtn:(id)sender
 {
-	NSLog(@"Click btn.");
-	
-	MainViewController *main = [[MainViewController alloc] init];
-	[self.navigationController pushViewController:main animated:YES];
+	if (sender == self.navigationItem.leftBarButtonItem)
+	{
+		NSLog(@"Click left.");
+	}
+	else if (sender == self.navigationItem.rightBarButtonItem)
+	{
+		NSLog(@"Click right.");
+	}
+	else
+	{
+		NSLog(@"Click btn.");
+		
+		MainViewController *main = [[MainViewController alloc] init];
+		[self.navigationController pushViewController:main animated:YES];
+	}
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -57,6 +70,16 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated
+{
+	
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+	
+}
+
+- (void)viewDidDisappear:(BOOL)animated
 {
 	
 }
