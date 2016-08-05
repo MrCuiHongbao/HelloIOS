@@ -9,10 +9,13 @@
 #import "ViewController.h"
 #import "UICircleView.h"
 #import "MainViewController.h"
+#import "EntryCell.h"
 
-@interface ViewController () <UIGestureRecognizerDelegate>
+@interface ViewController () <UIGestureRecognizerDelegate, UITableViewDelegate, UITableViewDataSource>
 
-@property (nonatomic, strong) UIButton *btnView;
+//@property (nonatomic, strong) UIButton *btnView;
+@property (nonatomic, strong) UITableView *entryTable;
+@property (nonatomic, strong) NSArray *entryList;
 
 @end
 
@@ -26,12 +29,17 @@
 	[container setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1]];
 	self.view = container;
 	
-	_btnView = [UIButton buttonWithType:UIButtonTypeSystem];
-	[_btnView setFrame:CGRectMake(100, 100, 200, 60)];
-	[_btnView setBackgroundColor:[UIColor redColor]];
-	[_btnView addTarget:self action:@selector(clickBtn:) forControlEvents:UIControlEventTouchUpInside];
-	[_btnView setTitle:@"Next" forState:UIControlStateNormal];
-	[container addSubview:_btnView];
+//	_btnView = [UIButton buttonWithType:UIButtonTypeSystem];
+//	[_btnView setFrame:CGRectMake(100, 100, 200, 60)];
+//	[_btnView setBackgroundColor:[UIColor redColor]];
+//	[_btnView addTarget:self action:@selector(clickBtn:) forControlEvents:UIControlEventTouchUpInside];
+//	[_btnView setTitle:@"Next" forState:UIControlStateNormal];
+//	[container addSubview:_btnView];
+	
+	_entryTable = [[UITableView alloc] initWithFrame:container.bounds style:UITableViewStylePlain];
+	_entryTable.delegate = self;
+	_entryTable.dataSource = self;
+	[container addSubview:_entryTable];
 }
 
 - (void)viewDidLoad
@@ -43,6 +51,8 @@
 	self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(clickBtn:)];
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(clickBtn:)];
 	[self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+	
+	_entryList = [NSArray arrayWithObjects:@"MainViewController", @"...", nil];
 }
 
 - (void)clickBtn:(id)sender
@@ -82,6 +92,46 @@
 - (void)viewDidDisappear:(BOOL)animated
 {
 	
+}
+
+#pragma mark UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+	return [_entryList count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	static NSString *entryCellId = @"entryId";
+	
+	EntryCell *cell = [tableView dequeueReusableCellWithIdentifier:entryCellId];
+	if (!cell)
+	{
+		cell = [[EntryCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:entryCellId];
+	}
+	
+	cell.textLabel.text = [_entryList objectAtIndex:indexPath.row];
+	
+	return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	return [EntryCell cellHeight];
+}
+
+#pragma mark UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	[tableView deselectRowAtIndexPath:indexPath animated:NO];
+	NSString *entryName = [_entryList objectAtIndex:indexPath.row];
+	id object = [[NSClassFromString(entryName) alloc] init];
+	if (object)
+	{
+		[self.navigationController pushViewController:object animated:YES];
+	}
 }
 
 @end
