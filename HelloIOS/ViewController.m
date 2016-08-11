@@ -113,6 +113,7 @@
 	
 	cell.textLabel.text = [_entryList objectAtIndex:indexPath.row];
 	
+	
 	return cell;
 }
 

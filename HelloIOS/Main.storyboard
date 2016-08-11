@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="anf-bz-lbf">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--Bigger Table View Controller-->
+        <scene sceneID="GVA-9L-dmI">
+            <objects>
+                <tableViewController id="anf-bz-lbf" customClass="BiggerTableViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="374" sectionHeaderHeight="28" sectionFooterHeight="28" id="YCi-Br-ORf">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="cellID" rowHeight="374" id="SD7-T4-ae7" customClass="BiggerTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="600" height="374"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="SD7-T4-ae7" id="zDB-nA-7KZ">
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="373.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FLj-Vw-jj7">
+                                            <rect key="frame" x="14" y="-22" width="558" height="417.5"/>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="FLj-Vw-jj7" firstAttribute="leading" secondItem="zDB-nA-7KZ" secondAttribute="leadingMargin" constant="6" id="0vO-SK-CyW"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="FLj-Vw-jj7" secondAttribute="trailing" constant="20" id="6Rv-2D-en0"/>
+                                        <constraint firstItem="FLj-Vw-jj7" firstAttribute="top" secondItem="zDB-nA-7KZ" secondAttribute="topMargin" id="7S6-7P-uib"/>
+                                        <constraint firstItem="FLj-Vw-jj7" firstAttribute="bottom" secondItem="zDB-nA-7KZ" secondAttribute="bottomMargin" constant="30" id="GyP-jx-bWK"/>
+                                        <constraint firstItem="FLj-Vw-jj7" firstAttribute="top" secondItem="zDB-nA-7KZ" secondAttribute="topMargin" constant="-30" id="SoM-Lp-8hN"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="FLj-Vw-jj7" secondAttribute="bottom" id="uqm-d7-M9y"/>
+                                    </constraints>
+                                    <variation key="default">
+                                        <mask key="constraints">
+                                            <exclude reference="7S6-7P-uib"/>
+                                            <exclude reference="uqm-d7-M9y"/>
+                                        </mask>
+                                    </variation>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="backgroundContent" destination="FLj-Vw-jj7" id="nv9-qL-Zhc"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="anf-bz-lbf" id="EsP-a2-X6q"/>
+                            <outlet property="delegate" destination="anf-bz-lbf" id="v1i-Pe-dGm"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Io9-kh-oBk" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="627" y="628"/>
+        </scene>
+    </scenes>
+</document>
