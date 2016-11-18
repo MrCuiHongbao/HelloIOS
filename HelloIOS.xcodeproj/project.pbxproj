@@ -17,6 +17,7 @@
 		1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */; };
 		1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E60E1CC2765100A5FC44 /* UICircleView.m */; };
 		3407599E1D58905600089DB2 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3407599D1D58905600089DB2 /* TableViewCell.m */; };
+		34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */; };
 		34C510C01D5C754B00E4A0BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34C510BB1D5C754B00E4A0BC /* Main.storyboard */; };
 		34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */; };
 		34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */; };
@@ -41,6 +42,8 @@
 		1EC2E60E1CC2765100A5FC44 /* UICircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircleView.m; sourceTree = "<group>"; };
 		3407599C1D58905600089DB2 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
 		3407599D1D58905600089DB2 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
+		34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleTableViewController.h; sourceTree = "<group>"; };
+		34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimpleTableViewController.m; sourceTree = "<group>"; };
 		34C510BB1D5C754B00E4A0BC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiggerTableViewCell.h; sourceTree = "<group>"; };
 		34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BiggerTableViewCell.m; sourceTree = "<group>"; };
@@ -98,6 +101,8 @@
 				3407599C1D58905600089DB2 /* TableViewCell.h */,
 				3407599D1D58905600089DB2 /* TableViewCell.m */,
 				34C510BB1D5C754B00E4A0BC /* Main.storyboard */,
+				34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */,
+				34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */,
 				34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */,
 				34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */,
 				34C510BE1D5C754B00E4A0BC /* BiggerTableViewController.h */,
@@ -200,6 +205,7 @@
 				1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
 				3407599E1D58905600089DB2 /* TableViewCell.m in Sources */,
+				34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
 				1EC2E5F51CC2662600A5FC44 /* main.m in Sources */,
 			);
@@ -307,6 +313,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
@@ -321,6 +328,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
