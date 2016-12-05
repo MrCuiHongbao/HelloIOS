@@ -14,11 +14,15 @@
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
 		1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FA1CC2662600A5FC44 /* ViewController.m */; };
-		1EC2E5FE1CC2662600A5FC44 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FC1CC2662600A5FC44 /* Main.storyboard */; };
 		1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FF1CC2662600A5FC44 /* HelloIOS.xcdatamodeld */; };
 		1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6021CC2662600A5FC44 /* Assets.xcassets */; };
 		1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */; };
 		1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E60E1CC2765100A5FC44 /* UICircleView.m */; };
+		3407599E1D58905600089DB2 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3407599D1D58905600089DB2 /* TableViewCell.m */; };
+		34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */; };
+		34C510C01D5C754B00E4A0BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34C510BB1D5C754B00E4A0BC /* Main.storyboard */; };
+		34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */; };
+		34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,13 +39,21 @@
 		1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1EC2E5F91CC2662600A5FC44 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		1EC2E5FA1CC2662600A5FC44 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		1EC2E5FD1CC2662600A5FC44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		1EC2E6001CC2662600A5FC44 /* HelloIOS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HelloIOS.xcdatamodel; sourceTree = "<group>"; };
 		1EC2E6021CC2662600A5FC44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1EC2E6051CC2662600A5FC44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1EC2E6071CC2662600A5FC44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1EC2E60D1CC2765100A5FC44 /* UICircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircleView.h; sourceTree = "<group>"; };
 		1EC2E60E1CC2765100A5FC44 /* UICircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircleView.m; sourceTree = "<group>"; };
+		3407599C1D58905600089DB2 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
+		3407599D1D58905600089DB2 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
+		34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleTableViewController.h; sourceTree = "<group>"; };
+		34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimpleTableViewController.m; sourceTree = "<group>"; };
+		34C510BB1D5C754B00E4A0BC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiggerTableViewCell.h; sourceTree = "<group>"; };
+		34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BiggerTableViewCell.m; sourceTree = "<group>"; };
+		34C510BE1D5C754B00E4A0BC /* BiggerTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiggerTableViewController.h; sourceTree = "<group>"; };
+		34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BiggerTableViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,7 +106,15 @@
 				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
 				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
 				1EC2E5FA1CC2662600A5FC44 /* ViewController.m */,
-				1EC2E5FC1CC2662600A5FC44 /* Main.storyboard */,
+				3407599C1D58905600089DB2 /* TableViewCell.h */,
+				3407599D1D58905600089DB2 /* TableViewCell.m */,
+				34C510BB1D5C754B00E4A0BC /* Main.storyboard */,
+				34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */,
+				34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */,
+				34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */,
+				34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */,
+				34C510BE1D5C754B00E4A0BC /* BiggerTableViewController.h */,
+				34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */,
 				1EC2E6021CC2662600A5FC44 /* Assets.xcassets */,
 				1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */,
 				1EC2E6071CC2662600A5FC44 /* Info.plist */,
@@ -145,7 +165,7 @@
 				TargetAttributes = {
 					1EC2E5EF1CC2662600A5FC44 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = WR3U379XHN;
+						DevelopmentTeam = R9V8UVQ5QF;
 					};
 				};
 			};
@@ -173,9 +193,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1E434AB11DDEF0B40099EB15 /* Resource in Resources */,
+				34C510C01D5C754B00E4A0BC /* Main.storyboard in Resources */,
 				1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */,
 				1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */,
-				1EC2E5FE1CC2662600A5FC44 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,11 +206,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
+				34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */,
 				1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */,
 				1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */,
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
 				1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
+				3407599E1D58905600089DB2 /* TableViewCell.m in Sources */,
+				34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
 				1EC2E5F51CC2662600A5FC44 /* main.m in Sources */,
 				1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */,
@@ -200,14 +224,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		1EC2E5FC1CC2662600A5FC44 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				1EC2E5FD1CC2662600A5FC44 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -309,10 +325,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -320,10 +340,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
