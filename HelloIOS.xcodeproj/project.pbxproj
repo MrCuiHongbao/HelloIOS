@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E434A3C1DDEE1810099EB15 /* UITestController.m */; };
+		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
 		1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA426311D5499AD008B96A7 /* EntryCell.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
@@ -20,6 +22,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1E434A3B1DDEE1810099EB15 /* UITestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestController.h; sourceTree = "<group>"; };
+		1E434A3C1DDEE1810099EB15 /* UITestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITestController.m; sourceTree = "<group>"; };
+		1E434AAF1DDEEC1D0099EB15 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
 		1E54A8751D53896F004ABE82 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		1E54A8761D53896F004ABE82 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		1EA426301D5499AD008B96A7 /* EntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryCell.h; sourceTree = "<group>"; };
@@ -55,6 +60,8 @@
 			children = (
 				1E54A8751D53896F004ABE82 /* MainViewController.h */,
 				1E54A8761D53896F004ABE82 /* MainViewController.m */,
+				1E434A3B1DDEE1810099EB15 /* UITestController.h */,
+				1E434A3C1DDEE1810099EB15 /* UITestController.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -62,6 +69,7 @@
 		1EC2E5E71CC2662600A5FC44 = {
 			isa = PBXGroup;
 			children = (
+				1E434AAF1DDEEC1D0099EB15 /* Resource */,
 				1EC2E5F21CC2662600A5FC44 /* HelloIOS */,
 				1EC2E5F11CC2662600A5FC44 /* Products */,
 			);
@@ -132,7 +140,7 @@
 		1EC2E5E81CC2662600A5FC44 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = younger;
 				TargetAttributes = {
 					1EC2E5EF1CC2662600A5FC44 = {
@@ -164,6 +172,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E434AB11DDEF0B40099EB15 /* Resource in Resources */,
 				1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */,
 				1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */,
 				1EC2E5FE1CC2662600A5FC44 /* Main.storyboard in Resources */,
@@ -184,6 +193,7 @@
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
 				1EC2E5F51CC2662600A5FC44 /* main.m in Sources */,
+				1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,8 +233,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -267,8 +279,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";

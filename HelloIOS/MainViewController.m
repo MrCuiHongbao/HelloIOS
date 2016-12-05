@@ -86,9 +86,44 @@
 	}
 }
 
+#pragma mark UIAlertViewDelegate
+
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
 	NSLog(@"alertView index %ld", buttonIndex);
+}
+
+- (void)alertViewCancel:(UIAlertView *)alertView
+{
+	NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)willPresentAlertView:(UIAlertView *)alertView
+{
+	NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)didPresentAlertView:(UIAlertView *)alertView
+{
+	NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+	NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+	NSLog(@"%s", __FUNCTION__);
+}
+
+// Called after edits in any of the default fields added by the style
+- (BOOL)alertViewShouldEnableFirstOtherButton:(UIAlertView *)alertView
+{
+	NSLog(@"%s", __FUNCTION__);
+	
+	return YES;
 }
 
 @end

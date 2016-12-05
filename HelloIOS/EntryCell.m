@@ -8,7 +8,7 @@
 
 #import "EntryCell.h"
 
-#define CELL_HEIGHT (80)
+#define CELL_HEIGHT (40)
 
 @implementation EntryCell
 
