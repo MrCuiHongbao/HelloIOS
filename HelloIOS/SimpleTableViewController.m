@@ -48,6 +48,8 @@
     
     // Configure the cell...
 	cell.textLabel.text = [NSString stringWithFormat:@"%ld", indexPath.row];
+	
+	NSLog(@"cellForRowAtIndexPath %ld", indexPath.row);
     
     return cell;
 }

@@ -1,25 +1,23 @@
 //
-//  ViewController.m
+//  UITableViewEnhancedController.m
 //  HelloIOS
 //
-//  Created by sethmao on 16/4/16.
+//  Created by sethmao on 2016/12/9.
 //  Copyright © 2016年 younger. All rights reserved.
 //
 
-#import "ViewController.h"
-#import "MainViewController.h"
-#import "EntryCell.h"
+#import "UITableViewEnhancedController.h"
 #import "UITableView1.h"
+#import "EntryCell.h"
 
-@interface ViewController () <UIGestureRecognizerDelegate, UITableViewDelegate, UITableViewDataSource>
+@interface UITableViewEnhancedController () <UITableViewDelegate, UITableViewDataSource>
 
-//@property (nonatomic, strong) UIButton *btnView;
 @property (nonatomic, strong) UITableView1 *entryTable;
 @property (nonatomic, strong) NSArray *entryList;
 
 @end
 
-@implementation ViewController
+@implementation UITableViewEnhancedController
 
 - (void)loadView
 {
@@ -29,50 +27,26 @@
 	[container setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1]];
 	self.view = container;
 	
-//	_btnView = [UIButton buttonWithType:UIButtonTypeSystem];
-//	[_btnView setFrame:CGRectMake(100, 100, 200, 60)];
-//	[_btnView setBackgroundColor:[UIColor redColor]];
-//	[_btnView addTarget:self action:@selector(clickBtn:) forControlEvents:UIControlEventTouchUpInside];
-//	[_btnView setTitle:@"Next" forState:UIControlStateNormal];
-//	[container addSubview:_btnView];
-	
-	_entryTable = [[UITableView1 alloc] initWithFrame:container.bounds style:UITableViewStylePlain];
-	_entryTable.delegate1 = self;
-	_entryTable.dataSource1 = self;
+	self.entryTable = [[UITableView1 alloc] initWithFrame:container.bounds style:UITableViewStylePlain];
+	self.entryTable.delegate1 = self;
+	self.entryTable.dataSource1 = self;
 	// _entryTable.pagingEnabled = YES;
-	[container addSubview:_entryTable];
+	[container addSubview:self.entryTable];
 }
 
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
 	
-	self.title = @"Root";
-	[self.navigationController.navigationBar setBarTintColor:[UIColor purpleColor]];
-	self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(clickBtn:)];
-	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(clickBtn:)];
-	[self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+	self.title = @"UITableViewEnhancedController";
 	
-	_entryList = @[@"MainViewController", @"UITestController", @"UITableViewEnhancedController"];
-}
-
-- (void)clickBtn:(id)sender
-{
-	if (sender == self.navigationItem.leftBarButtonItem)
+	int capacity = 100;
+	NSMutableArray<NSString *> *entryList = [NSMutableArray arrayWithCapacity:capacity];
+	for (int i=0; i<capacity; i++)
 	{
-		NSLog(@"Click left.");
+		[entryList addObject:[NSString stringWithFormat:@"XOXOXOXOXOXOXOXXOXOXO%d", i]];
 	}
-	else if (sender == self.navigationItem.rightBarButtonItem)
-	{
-		NSLog(@"Click right.");
-	}
-	else
-	{
-		NSLog(@"Click btn.");
-		
-		MainViewController *main = [[MainViewController alloc] init];
-		[self.navigationController pushViewController:main animated:YES];
-	}
+	self.entryList = entryList;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -121,22 +95,17 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	return [EntryCell cellHeight];
+	return 200;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	[tableView deselectRowAtIndexPath:indexPath animated:NO];
-	NSString *entryName = [_entryList objectAtIndex:indexPath.row];
-	id object = [[NSClassFromString(entryName) alloc] init];
-	if (object)
-	{
-		[self.navigationController pushViewController:object animated:YES];
-	}
+	
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+	NSLog(@"%s", __FUNCTION__);
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView
@@ -153,22 +122,37 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
-	
 }
 
 - (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
 {
-	
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
-	
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
 {
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
 	
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
+{
+	
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayFooterView:(UIView *)view forSection:(NSInteger)section
+{
+	
+}
+
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath*)indexPath
+{
 }
 
 @end

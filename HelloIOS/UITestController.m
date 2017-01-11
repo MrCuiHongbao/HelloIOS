@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) UIButton *button;
 @property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) UIImageView *animateView;
 
 @end
 
@@ -54,6 +55,23 @@
 		[container addSubview:image];
 		image;
 	});
+	
+	self.animateView = ({
+		UIImageView *image = [[UIImageView alloc] initWithFrame:CGRectMake(100, 300, 50, 50)];
+		[image setBackgroundColor:[UIColor colorWithWhite:0 alpha:1]];
+		
+		UIImage *i1 = [UIImage imageNamed:@"hotchat_ptt_zan_press"];
+		UIImage *i2 = [UIImage imageNamed:@"image1"];
+		NSArray *images = [NSArray arrayWithObjects:i2, i1, nil];
+	
+		image.animationImages = images;
+		image.animationDuration = 1;
+		image.animationRepeatCount = 0;
+		[image startAnimating];
+		[container addSubview:image];
+		image;
+	});
+	
 }
 
 - (void)viewDidLoad {

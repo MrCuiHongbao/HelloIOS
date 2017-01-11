@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4A1DFAAB8400455A03 /* UITableView1.m */; };
+		1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */; };
 		1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E434A3C1DDEE1810099EB15 /* UITestController.m */; };
 		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
@@ -17,7 +19,6 @@
 		1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FF1CC2662600A5FC44 /* HelloIOS.xcdatamodeld */; };
 		1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6021CC2662600A5FC44 /* Assets.xcassets */; };
 		1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */; };
-		1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E60E1CC2765100A5FC44 /* UICircleView.m */; };
 		3407599E1D58905600089DB2 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3407599D1D58905600089DB2 /* TableViewCell.m */; };
 		34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */; };
 		34C510C01D5C754B00E4A0BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34C510BB1D5C754B00E4A0BC /* Main.storyboard */; };
@@ -26,6 +27,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1E13AC491DFAAB8400455A03 /* UITableView1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UITableView1.h; path = Widgets/UITableView1.h; sourceTree = "<group>"; };
+		1E13AC4A1DFAAB8400455A03 /* UITableView1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UITableView1.m; path = Widgets/UITableView1.m; sourceTree = "<group>"; };
+		1E13AC4C1DFAD5EA00455A03 /* UITableViewEnhancedController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITableViewEnhancedController.h; sourceTree = "<group>"; };
+		1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITableViewEnhancedController.m; sourceTree = "<group>"; };
 		1E434A3B1DDEE1810099EB15 /* UITestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestController.h; sourceTree = "<group>"; };
 		1E434A3C1DDEE1810099EB15 /* UITestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITestController.m; sourceTree = "<group>"; };
 		1E434AAF1DDEEC1D0099EB15 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
@@ -43,8 +48,6 @@
 		1EC2E6021CC2662600A5FC44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1EC2E6051CC2662600A5FC44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1EC2E6071CC2662600A5FC44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1EC2E60D1CC2765100A5FC44 /* UICircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UICircleView.h; sourceTree = "<group>"; };
-		1EC2E60E1CC2765100A5FC44 /* UICircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UICircleView.m; sourceTree = "<group>"; };
 		3407599C1D58905600089DB2 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
 		3407599D1D58905600089DB2 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
 		34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleTableViewController.h; sourceTree = "<group>"; };
@@ -67,6 +70,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1E13AC481DFAAB0A00455A03 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				1E13AC491DFAAB8400455A03 /* UITableView1.h */,
+				1E13AC4A1DFAAB8400455A03 /* UITableView1.m */,
+			);
+			name = Widgets;
+			sourceTree = "<group>";
+		};
 		1E54A8781D5389CD004ABE82 /* Demo */ = {
 			isa = PBXGroup;
 			children = (
@@ -74,6 +86,8 @@
 				1E54A8761D53896F004ABE82 /* MainViewController.m */,
 				1E434A3B1DDEE1810099EB15 /* UITestController.h */,
 				1E434A3C1DDEE1810099EB15 /* UITestController.m */,
+				1E13AC4C1DFAD5EA00455A03 /* UITableViewEnhancedController.h */,
+				1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -99,9 +113,8 @@
 		1EC2E5F21CC2662600A5FC44 /* HelloIOS */ = {
 			isa = PBXGroup;
 			children = (
+				1E13AC481DFAAB0A00455A03 /* Widgets */,
 				1E54A8781D5389CD004ABE82 /* Demo */,
-				1EC2E60D1CC2765100A5FC44 /* UICircleView.h */,
-				1EC2E60E1CC2765100A5FC44 /* UICircleView.m */,
 				1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */,
 				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
 				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
@@ -208,9 +221,10 @@
 			files = (
 				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
 				34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */,
-				1EC2E60F1CC2765100A5FC44 /* UICircleView.m in Sources */,
+				1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */,
 				1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */,
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
+				1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */,
 				1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
 				3407599E1D58905600089DB2 /* TableViewCell.m in Sources */,
