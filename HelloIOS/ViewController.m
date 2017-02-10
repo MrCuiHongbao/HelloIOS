@@ -53,7 +53,10 @@
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(clickBtn:)];
 	[self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
 	
-	_entryList = @[@"MainViewController", @"UITestController", @"UITableViewEnhancedController"];
+	_entryList = @[@"MainViewController",
+				   @"UITestController",
+				   @"UITableViewEnhancedController",
+				   @"AVPlayerViewController"];
 }
 
 - (void)clickBtn:(id)sender

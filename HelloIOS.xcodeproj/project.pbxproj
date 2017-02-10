@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4A1DFAAB8400455A03 /* UITableView1.m */; };
 		1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */; };
+		1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */; };
+		1E2A2D221E4DB595008998A9 /* PlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2A2D211E4DB595008998A9 /* PlayerView.m */; };
 		1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E434A3C1DDEE1810099EB15 /* UITestController.m */; };
 		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
@@ -31,6 +33,10 @@
 		1E13AC4A1DFAAB8400455A03 /* UITableView1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UITableView1.m; path = Widgets/UITableView1.m; sourceTree = "<group>"; };
 		1E13AC4C1DFAD5EA00455A03 /* UITableViewEnhancedController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITableViewEnhancedController.h; sourceTree = "<group>"; };
 		1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITableViewEnhancedController.m; sourceTree = "<group>"; };
+		1E2A2D1D1E4DB3BE008998A9 /* AVPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerViewController.h; sourceTree = "<group>"; };
+		1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerViewController.m; sourceTree = "<group>"; };
+		1E2A2D201E4DB595008998A9 /* PlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerView.h; sourceTree = "<group>"; };
+		1E2A2D211E4DB595008998A9 /* PlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerView.m; sourceTree = "<group>"; };
 		1E434A3B1DDEE1810099EB15 /* UITestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestController.h; sourceTree = "<group>"; };
 		1E434A3C1DDEE1810099EB15 /* UITestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITestController.m; sourceTree = "<group>"; };
 		1E434AAF1DDEEC1D0099EB15 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
@@ -88,6 +94,10 @@
 				1E434A3C1DDEE1810099EB15 /* UITestController.m */,
 				1E13AC4C1DFAD5EA00455A03 /* UITableViewEnhancedController.h */,
 				1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */,
+				1E2A2D1D1E4DB3BE008998A9 /* AVPlayerViewController.h */,
+				1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */,
+				1E2A2D201E4DB595008998A9 /* PlayerView.h */,
+				1E2A2D211E4DB595008998A9 /* PlayerView.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -219,9 +229,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */,
 				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
 				34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */,
 				1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */,
+				1E2A2D221E4DB595008998A9 /* PlayerView.m in Sources */,
 				1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */,
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
 				1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */,
