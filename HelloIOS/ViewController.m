@@ -56,7 +56,9 @@
 	_entryList = @[@"MainViewController",
 				   @"UITestController",
 				   @"UITableViewEnhancedController",
-				   @"AVPlayerViewController"];
+				   @"AVPlayerViewController",
+				   @"RecordController",
+				   @"VideoCompositionController"];
 }
 
 - (void)clickBtn:(id)sender

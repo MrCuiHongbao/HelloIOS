@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4A1DFAAB8400455A03 /* UITableView1.m */; };
 		1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */; };
+		1E27C86F1EB577CB00405D68 /* RecordController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E27C86E1EB577CA00405D68 /* RecordController.m */; };
 		1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */; };
 		1E2A2D221E4DB595008998A9 /* PlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2A2D211E4DB595008998A9 /* PlayerView.m */; };
 		1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E434A3C1DDEE1810099EB15 /* UITestController.m */; };
 		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
+		1E7D3BDA1EB5EDB800FCE97A /* VideoCompositionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */; };
 		1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA426311D5499AD008B96A7 /* EntryCell.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
@@ -33,6 +35,9 @@
 		1E13AC4A1DFAAB8400455A03 /* UITableView1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UITableView1.m; path = Widgets/UITableView1.m; sourceTree = "<group>"; };
 		1E13AC4C1DFAD5EA00455A03 /* UITableViewEnhancedController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITableViewEnhancedController.h; sourceTree = "<group>"; };
 		1E13AC4D1DFAD5EA00455A03 /* UITableViewEnhancedController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UITableViewEnhancedController.m; sourceTree = "<group>"; };
+		1E27C86D1EB577CA00405D68 /* RecordController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordController.h; sourceTree = "<group>"; };
+		1E27C86E1EB577CA00405D68 /* RecordController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordController.m; sourceTree = "<group>"; };
+		1E27C8701EB57B1D00405D68 /* UserDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UserDefine.h; sourceTree = "<group>"; };
 		1E2A2D1D1E4DB3BE008998A9 /* AVPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerViewController.h; sourceTree = "<group>"; };
 		1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerViewController.m; sourceTree = "<group>"; };
 		1E2A2D201E4DB595008998A9 /* PlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerView.h; sourceTree = "<group>"; };
@@ -42,6 +47,8 @@
 		1E434AAF1DDEEC1D0099EB15 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
 		1E54A8751D53896F004ABE82 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		1E54A8761D53896F004ABE82 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
+		1E7D3BD81EB5EDB800FCE97A /* VideoCompositionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoCompositionController.h; sourceTree = "<group>"; };
+		1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoCompositionController.m; sourceTree = "<group>"; };
 		1EA426301D5499AD008B96A7 /* EntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryCell.h; sourceTree = "<group>"; };
 		1EA426311D5499AD008B96A7 /* EntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EntryCell.m; sourceTree = "<group>"; };
 		1EC2E5F01CC2662600A5FC44 /* HelloIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +105,11 @@
 				1E2A2D1E1E4DB3BE008998A9 /* AVPlayerViewController.m */,
 				1E2A2D201E4DB595008998A9 /* PlayerView.h */,
 				1E2A2D211E4DB595008998A9 /* PlayerView.m */,
+				1E27C86D1EB577CA00405D68 /* RecordController.h */,
+				1E27C86E1EB577CA00405D68 /* RecordController.m */,
+				1E27C8701EB57B1D00405D68 /* UserDefine.h */,
+				1E7D3BD81EB5EDB800FCE97A /* VideoCompositionController.h */,
+				1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -188,7 +200,8 @@
 				TargetAttributes = {
 					1EC2E5EF1CC2662600A5FC44 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = R9V8UVQ5QF;
+						DevelopmentTeam = WR3U379XHN;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -229,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E27C86F1EB577CB00405D68 /* RecordController.m in Sources */,
 				1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */,
 				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
 				34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */,
@@ -238,6 +252,7 @@
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
 				1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */,
 				1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */,
+				1E7D3BDA1EB5EDB800FCE97A /* VideoCompositionController.m in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
 				3407599E1D58905600089DB2 /* TableViewCell.m in Sources */,
 				34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */,
@@ -353,12 +368,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R9V8UVQ5QF;
+				DEVELOPMENT_TEAM = WR3U379XHN;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -368,12 +384,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R9V8UVQ5QF;
+				DEVELOPMENT_TEAM = WR3U379XHN;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = younger.HelloIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
