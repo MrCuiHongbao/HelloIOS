@@ -42,7 +42,7 @@
 	{
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
 		[btn setBackgroundColor:[UIColor colorWithRed:1 green:0 blue:0 alpha:1]];
-		[btn setFrame:CGRectMake(10, self.sh - 40, self.sw - 10, 30)];
+		[btn setFrame:CGRectMake(0, self.sh - 30, self.sw, 30)];
 		[btn setTitle:@"合成视频" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onComposition) forControlEvents:UIControlEventTouchUpInside];
 		_compositionBtn = btn;
@@ -55,7 +55,7 @@
 {
 	if (!_previewView)
 	{
-		CGRect rect = CGRectMake(10, 10, self.sw - 20, self.sw - 20);
+		CGRect rect = CGRectMake(0, 0, self.sw, self.sw);
 		UIView *view = [[UIView alloc] initWithFrame:rect];
 		[view setBackgroundColor:[UIColor colorWithRed:1 green:1 blue:0 alpha:1]];
 		_previewView = view;
@@ -151,7 +151,11 @@
 	
 	//Here where load our movie Assets using AVURLAsset
 	AVURLAsset* firstAsset = [AVURLAsset URLAssetWithURL:self.video1 options:nil];
+	AVAssetTrack *firstVideoAsset = [[firstAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+	AVAssetTrack *firstAudioAsset = [[firstAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+	
 	AVURLAsset * secondAsset = [AVURLAsset URLAssetWithURL:self.video2 options:nil];
+	AVAssetTrack *secondVideoAsset = [[secondAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
  
 	//Create AVMutableComposition Object.This object will hold our multiple AVMutableCompositionTrack.
 	AVMutableComposition* mixComposition = [[AVMutableComposition alloc] init];
@@ -159,16 +163,14 @@
 	//Here we are creating the first AVMutableCompositionTrack.See how we are adding a new track to our AVMutableComposition.
 	AVMutableCompositionTrack *firstTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
 	//Now we set the length of the firstTrack equal to the length of the firstAsset and add the firstAsset to out newly created track at kCMTimeZero so video plays from the start of the track.
-	[firstTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:[[firstAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+	[firstTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstVideoAsset atTime:kCMTimeZero error:nil];
+	
+	AVMutableCompositionTrack *firstAudioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+	[firstAudioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstAudioAsset atTime:kCMTimeZero error:nil];
  
 	//Now we repeat the same process for the 2nd track as we did above for the first track.Note that the new track also starts at kCMTimeZero meaning both tracks will play simultaneously.
 	AVMutableCompositionTrack *secondTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-	[secondTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, secondAsset.duration) ofTrack:[[secondAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
-	
-	CGAffineTransform txf1 = [firstAsset preferredTransform];
-	CGSize size1 = [firstAsset naturalSize];
-	CGAffineTransform txf2 = [secondAsset preferredTransform];
-	CGSize size2 = [secondAsset naturalSize];
+	[secondTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, secondAsset.duration) ofTrack:secondVideoAsset atTime:kCMTimeZero error:nil];
 	
 	//See how we are creating AVMutableVideoCompositionInstruction object.This object will contain the array of our AVMutableVideoCompositionLayerInstruction objects.You set the duration of the layer.You should add the lenght equal to the lingth of the longer asset in terms of duration.
 	AVMutableVideoCompositionInstruction * MainInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
@@ -176,12 +178,14 @@
  
 	//We will be creating 2 AVMutableVideoCompositionLayerInstruction objects.Each for our 2 AVMutableCompositionTrack.here we are creating AVMutableVideoCompositionLayerInstruction for out first track.see how we make use of Affinetransform to move and scale our First Track.so it is displayed at the bottom of the screen in smaller size.(First track in the one that remains on top).
 	AVMutableVideoCompositionLayerInstruction *FirstlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:firstTrack];
+	[FirstlayerInstruction setTransform:[firstAsset preferredTransform] atTime:kCMTimeZero];
 	CGAffineTransform Scale = CGAffineTransformMakeScale(0.5f,0.5f);
 	CGAffineTransform Move = CGAffineTransformMakeTranslation(CGRectGetWidth(self.previewView.frame) / 2,0);
 	[FirstlayerInstruction setTransform:CGAffineTransformConcat(Scale,Move) atTime:kCMTimeZero];
  
 	//Here we are creating AVMutableVideoCompositionLayerInstruction for out second track.see how we make use of Affinetransform to move and scale our second Track.
 	AVMutableVideoCompositionLayerInstruction *SecondlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:secondTrack];
+	[SecondlayerInstruction setTransform:[secondAsset preferredTransform] atTime:kCMTimeZero];
 	CGAffineTransform SecondScale = CGAffineTransformMakeScale(0.5f,0.5f);
 	CGAffineTransform SecondMove = CGAffineTransformMakeTranslation(0,0);
 	[SecondlayerInstruction setTransform:CGAffineTransformConcat(SecondScale,SecondMove) atTime:kCMTimeZero];
