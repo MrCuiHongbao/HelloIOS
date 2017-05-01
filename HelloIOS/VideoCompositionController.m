@@ -194,112 +194,7 @@
 		}
 		
 		NSLog(@"video1=%@\n, video2=%@", self.video1, self.video2);
-		
-		//Here where load our movie Assets using AVURLAsset
-		AVURLAsset* firstAsset = [AVURLAsset URLAssetWithURL:self.video1 options:nil];
-		AVAssetTrack *firstVideoAsset = [[firstAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-		AVAssetTrack *firstAudioAsset = [[firstAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-		
-		AVURLAsset * secondAsset = [AVURLAsset URLAssetWithURL:self.video2 options:nil];
-		AVAssetTrack *secondVideoAsset = [[secondAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-		
-		//Create AVMutableComposition Object.This object will hold our multiple AVMutableCompositionTrack.
-		AVMutableComposition* mixComposition = [[AVMutableComposition alloc] init];
-		
-		//Here we are creating the first AVMutableCompositionTrack.See how we are adding a new track to our AVMutableComposition.
-		AVMutableCompositionTrack *firstTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-		//Now we set the length of the firstTrack equal to the length of the firstAsset and add the firstAsset to out newly created track at kCMTimeZero so video plays from the start of the track.
-		[firstTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstVideoAsset atTime:kCMTimeZero error:nil];
-		
-		AVMutableCompositionTrack *firstAudioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-		[firstAudioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstAudioAsset atTime:kCMTimeZero error:nil];
-		
-		//Now we repeat the same process for the 2nd track as we did above for the first track.Note that the new track also starts at kCMTimeZero meaning both tracks will play simultaneously.
-		AVMutableCompositionTrack *secondTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-		[secondTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, secondAsset.duration) ofTrack:secondVideoAsset atTime:kCMTimeZero error:nil];
-		
-		//See how we are creating AVMutableVideoCompositionInstruction object.This object will contain the array of our AVMutableVideoCompositionLayerInstruction objects.You set the duration of the layer.You should add the lenght equal to the lingth of the longer asset in terms of duration.
-		AVMutableVideoCompositionInstruction * MainInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-		MainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, firstAsset.duration);
-		
-		//We will be creating 2 AVMutableVideoCompositionLayerInstruction objects.Each for our 2 AVMutableCompositionTrack.here we are creating AVMutableVideoCompositionLayerInstruction for out first track.see how we make use of Affinetransform to move and scale our First Track.so it is displayed at the bottom of the screen in smaller size.(First track in the one that remains on top).
-		AVMutableVideoCompositionLayerInstruction *FirstlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:firstTrack];
-		[FirstlayerInstruction setTransform:[firstAsset preferredTransform] atTime:kCMTimeZero];
-		CGAffineTransform Scale = CGAffineTransformMakeScale(0.5f,0.5f);
-		CGAffineTransform Move = CGAffineTransformMakeTranslation(CGRectGetWidth(self.previewView.frame) / 2,0);
-		[FirstlayerInstruction setTransform:CGAffineTransformConcat(Scale,Move) atTime:kCMTimeZero];
-		
-		//Here we are creating AVMutableVideoCompositionLayerInstruction for out second track.see how we make use of Affinetransform to move and scale our second Track.
-		AVMutableVideoCompositionLayerInstruction *SecondlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:secondTrack];
-		[SecondlayerInstruction setTransform:[secondAsset preferredTransform] atTime:kCMTimeZero];
-		CGAffineTransform SecondScale = CGAffineTransformMakeScale(0.5f,0.5f);
-		CGAffineTransform SecondMove = CGAffineTransformMakeTranslation(0,0);
-		[SecondlayerInstruction setTransform:CGAffineTransformConcat(SecondScale,SecondMove) atTime:kCMTimeZero];
-		
-		//Now we add our 2 created AVMutableVideoCompositionLayerInstruction objects to our AVMutableVideoCompositionInstruction in form of an array.
-		MainInstruction.layerInstructions = [NSArray arrayWithObjects:FirstlayerInstruction,SecondlayerInstruction,nil];;
-		
-		//Now we create AVMutableVideoComposition object.We can add mutiple AVMutableVideoCompositionInstruction to this object.We have only one AVMutableVideoCompositionInstruction object in our example.You can use multiple AVMutableVideoCompositionInstruction objects to add multiple layers of effects such as fade and transition but make sure that time ranges of the AVMutableVideoCompositionInstruction objects dont overlap.
-		AVMutableVideoComposition *MainCompositionInst = [AVMutableVideoComposition videoComposition];
-		MainCompositionInst.instructions = [NSArray arrayWithObject:MainInstruction];
-		MainCompositionInst.frameDuration = CMTimeMake(1, 30);
-		MainCompositionInst.renderSize = CGSizeMake(CGRectGetWidth(self.previewView.frame), CGRectGetHeight(self.previewView.frame));
-		
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-		NSString *outpathURL = paths[0];
-		NSFileManager *mgr = [NSFileManager defaultManager];
-		[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
-		outpathURL = [outpathURL stringByAppendingPathComponent:@"output.mp4"];
-		[mgr removeItemAtPath:outpathURL error:nil];
-		
-		AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPreset640x480];
-		exportSession.videoComposition = MainCompositionInst;
-		exportSession.outputURL = [NSURL fileURLWithPath:outpathURL];
-		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
-		[exportSession exportAsynchronouslyWithCompletionHandler:^(void){
-			switch(exportSession.status)
-			{
-				case AVAssetExportSessionStatusCompleted:
-				{
-					[self writeVideoToPhotoLibrary:[NSURL fileURLWithPath:outpathURL]];
-					NSLog(@"export completed...");
-					
-					dispatch_async(dispatch_get_main_queue(), ^(void){
-						[self.indicatorView stopAnimating];
-					});
-					break;
-				}
-				case AVAssetExportSessionStatusFailed:
-				{
-					NSLog(@"export failed...");
-					break;
-				}
-				case AVAssetExportSessionStatusCancelled:
-				{
-					NSLog(@"export cancel...");
-					break;
-				}
-				case AVAssetExportSessionStatusWaiting:
-				{
-					NSLog(@"export waiting...");
-					break;
-				}
-				case AVAssetExportSessionStatusUnknown:
-				{
-					break;
-				}
-			}
-		}];
-		
-		//Finally just add the newly created AVMutableComposition with multiple tracks to an AVPlayerItem and play it using AVPlayer.
-		AVPlayerItem * newPlayerItem = [AVPlayerItem playerItemWithAsset:mixComposition];
-		newPlayerItem.videoComposition = MainCompositionInst;
-		self.player = [AVPlayer playerWithPlayerItem:newPlayerItem];
-		//[self.player addObserver:self forKeyPath:@"status" options:0 context:AVPlayerDemoPlaybackViewControllerStatusObservationContext];
-		self.playerView.player = self.player;
-		[self.playerView setVideoFillMode:AVLayerVideoGravityResizeAspectFill];
-		[self.playerView setHidden:NO];
-		[self.playerView.player play];
+		[self sideBySideSegmentVideoWithSource:self.video1.absoluteString Record:self.video2.absoluteString];
 	}
 	else if (sender == self.compositionLineBtn)
 	{
@@ -309,87 +204,205 @@
 		}
 		
 		NSLog(@"video1=%@\n, video2=%@", self.video1, self.video2);
-		
-		// 准备素材
-		AVURLAsset* asset1 = [AVURLAsset URLAssetWithURL:self.video1 options:nil];
-		AVAssetTrack *videoAsset1 = [[asset1 tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-		AVAssetTrack *audioAsset1 = [[asset1 tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-		
-		AVURLAsset * asset2 = [AVURLAsset URLAssetWithURL:self.video2 options:nil];
-		AVAssetTrack *videoAsset2 = [[asset2 tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-		AVAssetTrack *audioAsset2 = [[asset2 tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-		
-		// 创建拼接工程
-		AVMutableComposition* mc = [[AVMutableComposition alloc] init];
-		
-		// 添加视频和音频轨道
-		AVMutableCompositionTrack *videoTrack = [mc addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-		
-		// 插入音视频数据
-		CMTimeRange time1 = CMTimeRangeMake(kCMTimeZero, asset1.duration);
-		CMTimeRange time2 = CMTimeRangeMake(kCMTimeZero, asset2.duration);
-		[videoTrack insertTimeRange:time2 ofTrack:videoAsset2 atTime:kCMTimeZero error:nil];
-		[videoTrack insertTimeRange:time1 ofTrack:videoAsset1 atTime:kCMTimeZero error:nil];
-		
-		AVMutableCompositionTrack *audioTrack = [mc addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-		[audioTrack insertTimeRange:time2 ofTrack:audioAsset2 atTime:kCMTimeZero error:nil];
-		[audioTrack insertTimeRange:time1 ofTrack:audioAsset1 atTime:kCMTimeZero error:nil];
-		
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-		NSString *outpathURL = paths[0];
-		NSFileManager *mgr = [NSFileManager defaultManager];
-		[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
-		outpathURL = [outpathURL stringByAppendingPathComponent:@"output.mp4"];
-		[mgr removeItemAtPath:outpathURL error:nil];
-		
-		AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPreset640x480];
-		exportSession.outputURL = [NSURL fileURLWithPath:outpathURL];
-		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
-		[exportSession exportAsynchronouslyWithCompletionHandler:^(void){
-			switch(exportSession.status)
-			{
-				case AVAssetExportSessionStatusCompleted:
-				{
-					[self writeVideoToPhotoLibrary:[NSURL fileURLWithPath:outpathURL]];
-					NSLog(@"export completed...");
-					
-					dispatch_async(dispatch_get_main_queue(), ^(void){
-						[self.indicatorView stopAnimating];
-					});
-					break;
-				}
-				case AVAssetExportSessionStatusFailed:
-				{
-					NSLog(@"export failed...");
-					break;
-				}
-				case AVAssetExportSessionStatusCancelled:
-				{
-					NSLog(@"export cancel...");
-					break;
-				}
-				case AVAssetExportSessionStatusWaiting:
-				{
-					NSLog(@"export waiting...");
-					break;
-				}
-				case AVAssetExportSessionStatusUnknown:
-				{
-					break;
-				}
-			}
-		}];
-		
-		//Finally just add the newly created AVMutableComposition with multiple tracks to an AVPlayerItem and play it using AVPlayer.
-		AVPlayerItem * newPlayerItem = [AVPlayerItem playerItemWithAsset:mc];
-		self.player = [AVPlayer playerWithPlayerItem:newPlayerItem];
-		self.playerView.player = self.player;
-		[self.playerView setVideoFillMode:AVLayerVideoGravityResizeAspectFill];
-		[self.playerView setHidden:NO];
-		[self.playerView.player play];
+		[self lineSegmentVideo:@[self.video1.absoluteString, self.video2.absoluteString]];
 	}
 	
 	[self.indicatorView startAnimating];
+}
+
+// 第一段是源视频，第二段是自己录制的视频
+// 视频合成后保留源视频的声音
+// 源视频的长度要大于等于录制视频
+- (void)sideBySideSegmentVideoWithSource:(NSString *)video1 Record:(NSString *)video2
+{
+	//Here where load our movie Assets using AVURLAsset
+	AVURLAsset* firstAsset = [AVURLAsset URLAssetWithURL:[NSURL URLWithString:video1] options:nil];
+	AVAssetTrack *firstVideoAsset = [[firstAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+	AVAssetTrack *firstAudioAsset = [[firstAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+	
+	AVURLAsset * secondAsset = [AVURLAsset URLAssetWithURL:[NSURL URLWithString:video2] options:nil];
+	AVAssetTrack *secondVideoAsset = [[secondAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+	
+	//Create AVMutableComposition Object.This object will hold our multiple AVMutableCompositionTrack.
+	AVMutableComposition* mixComposition = [[AVMutableComposition alloc] init];
+	
+	//Here we are creating the first AVMutableCompositionTrack.See how we are adding a new track to our AVMutableComposition.
+	AVMutableCompositionTrack *firstTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+	//Now we set the length of the firstTrack equal to the length of the firstAsset and add the firstAsset to out newly created track at kCMTimeZero so video plays from the start of the track.
+	[firstTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstVideoAsset atTime:kCMTimeZero error:nil];
+	
+	AVMutableCompositionTrack *firstAudioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+	[firstAudioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, firstAsset.duration) ofTrack:firstAudioAsset atTime:kCMTimeZero error:nil];
+	
+	//Now we repeat the same process for the 2nd track as we did above for the first track.Note that the new track also starts at kCMTimeZero meaning both tracks will play simultaneously.
+	AVMutableCompositionTrack *secondTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+	[secondTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, secondAsset.duration) ofTrack:secondVideoAsset atTime:kCMTimeZero error:nil];
+	
+	//See how we are creating AVMutableVideoCompositionInstruction object.This object will contain the array of our AVMutableVideoCompositionLayerInstruction objects.You set the duration of the layer.You should add the lenght equal to the lingth of the longer asset in terms of duration.
+	AVMutableVideoCompositionInstruction * MainInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+	MainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, firstAsset.duration);
+	
+	//We will be creating 2 AVMutableVideoCompositionLayerInstruction objects.Each for our 2 AVMutableCompositionTrack.here we are creating AVMutableVideoCompositionLayerInstruction for out first track.see how we make use of Affinetransform to move and scale our First Track.so it is displayed at the bottom of the screen in smaller size.(First track in the one that remains on top).
+	AVMutableVideoCompositionLayerInstruction *FirstlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:firstTrack];
+	[FirstlayerInstruction setTransform:[firstAsset preferredTransform] atTime:kCMTimeZero];
+	CGAffineTransform Scale = CGAffineTransformMakeScale(0.5f,0.5f);
+	CGAffineTransform Move = CGAffineTransformMakeTranslation(CGRectGetWidth(self.previewView.frame) / 2,0);
+	[FirstlayerInstruction setTransform:CGAffineTransformConcat(Scale,Move) atTime:kCMTimeZero];
+	
+	//Here we are creating AVMutableVideoCompositionLayerInstruction for out second track.see how we make use of Affinetransform to move and scale our second Track.
+	AVMutableVideoCompositionLayerInstruction *SecondlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:secondTrack];
+	[SecondlayerInstruction setTransform:[secondAsset preferredTransform] atTime:kCMTimeZero];
+	CGAffineTransform SecondScale = CGAffineTransformMakeScale(0.5f,0.5f);
+	CGAffineTransform SecondMove = CGAffineTransformMakeTranslation(0,0);
+	[SecondlayerInstruction setTransform:CGAffineTransformConcat(SecondScale,SecondMove) atTime:kCMTimeZero];
+	
+	//Now we add our 2 created AVMutableVideoCompositionLayerInstruction objects to our AVMutableVideoCompositionInstruction in form of an array.
+	MainInstruction.layerInstructions = [NSArray arrayWithObjects:FirstlayerInstruction,SecondlayerInstruction,nil];;
+	
+	//Now we create AVMutableVideoComposition object.We can add mutiple AVMutableVideoCompositionInstruction to this object.We have only one AVMutableVideoCompositionInstruction object in our example.You can use multiple AVMutableVideoCompositionInstruction objects to add multiple layers of effects such as fade and transition but make sure that time ranges of the AVMutableVideoCompositionInstruction objects dont overlap.
+	AVMutableVideoComposition *MainCompositionInst = [AVMutableVideoComposition videoComposition];
+	MainCompositionInst.instructions = [NSArray arrayWithObject:MainInstruction];
+	MainCompositionInst.frameDuration = CMTimeMake(1, 30);
+	MainCompositionInst.renderSize = CGSizeMake(CGRectGetWidth(self.previewView.frame), CGRectGetHeight(self.previewView.frame));
+	
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+	NSString *outpathURL = paths[0];
+	NSFileManager *mgr = [NSFileManager defaultManager];
+	[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
+	outpathURL = [outpathURL stringByAppendingPathComponent:@"output.mp4"];
+	[mgr removeItemAtPath:outpathURL error:nil];
+	
+	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPreset640x480];
+	exportSession.videoComposition = MainCompositionInst;
+	exportSession.outputURL = [NSURL fileURLWithPath:outpathURL];
+	exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+	[exportSession exportAsynchronouslyWithCompletionHandler:^(void){
+		switch(exportSession.status)
+		{
+			case AVAssetExportSessionStatusCompleted:
+			{
+				[self writeVideoToPhotoLibrary:[NSURL fileURLWithPath:outpathURL]];
+				NSLog(@"export completed...");
+				
+				dispatch_async(dispatch_get_main_queue(), ^(void){
+					[self.indicatorView stopAnimating];
+				});
+				break;
+			}
+			case AVAssetExportSessionStatusFailed:
+			{
+				NSLog(@"export failed...");
+				break;
+			}
+			case AVAssetExportSessionStatusCancelled:
+			{
+				NSLog(@"export cancel...");
+				break;
+			}
+			case AVAssetExportSessionStatusWaiting:
+			{
+				NSLog(@"export waiting...");
+				break;
+			}
+			case AVAssetExportSessionStatusUnknown:
+			{
+				break;
+			}
+		}
+	}];
+	
+	//Finally just add the newly created AVMutableComposition with multiple tracks to an AVPlayerItem and play it using AVPlayer.
+	AVPlayerItem * newPlayerItem = [AVPlayerItem playerItemWithAsset:mixComposition];
+	newPlayerItem.videoComposition = MainCompositionInst;
+	self.player = [AVPlayer playerWithPlayerItem:newPlayerItem];
+	//[self.player addObserver:self forKeyPath:@"status" options:0 context:AVPlayerDemoPlaybackViewControllerStatusObservationContext];
+	self.playerView.player = self.player;
+	[self.playerView setVideoFillMode:AVLayerVideoGravityResizeAspectFill];
+	[self.playerView setHidden:NO];
+	[self.playerView.player play];
+}
+
+- (void)lineSegmentVideo:(NSArray<NSString *> *)videos
+{
+	long videoCount = [videos count];
+	if (videoCount < 2)
+	{
+		NSLog(@"两段以上视频才能连接");
+		return;
+	}
+	
+	// 创建拼接工程
+	AVMutableComposition* mc = [[AVMutableComposition alloc] init];
+	
+	// 添加视频和音频轨道
+	AVMutableCompositionTrack *videoTrack = [mc addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+	AVMutableCompositionTrack *audioTrack = [mc addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+	
+	// 添加音视频素材
+	for(long i=videoCount-1; i>=0; i--)
+	{
+		NSURL *videoURL = [NSURL URLWithString:videos[i]];
+		AVURLAsset* asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
+		AVAssetTrack *videoAsset = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+		AVAssetTrack *audioAsset = [[asset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+		
+		[videoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:videoAsset atTime:kCMTimeZero error:nil];
+		[audioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:audioAsset atTime:kCMTimeZero error:nil];
+	}
+	
+	// 导出
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+	NSString *outpathURL = paths[0];
+	NSFileManager *mgr = [NSFileManager defaultManager];
+	[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
+	outpathURL = [outpathURL stringByAppendingPathComponent:@"output.mp4"];
+	[mgr removeItemAtPath:outpathURL error:nil];
+	
+	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPreset640x480];
+	exportSession.outputURL = [NSURL fileURLWithPath:outpathURL];
+	exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+	[exportSession exportAsynchronouslyWithCompletionHandler:^(void){
+		switch(exportSession.status)
+		{
+			case AVAssetExportSessionStatusCompleted:
+			{
+				[self writeVideoToPhotoLibrary:[NSURL fileURLWithPath:outpathURL]];
+				NSLog(@"export completed...");
+				
+				dispatch_async(dispatch_get_main_queue(), ^(void){
+					[self.indicatorView stopAnimating];
+				});
+				break;
+			}
+			case AVAssetExportSessionStatusFailed:
+			{
+				NSLog(@"export failed...");
+				break;
+			}
+			case AVAssetExportSessionStatusCancelled:
+			{
+				NSLog(@"export cancel...");
+				break;
+			}
+			case AVAssetExportSessionStatusWaiting:
+			{
+				NSLog(@"export waiting...");
+				break;
+			}
+			case AVAssetExportSessionStatusUnknown:
+			{
+				break;
+			}
+		}
+	}];
+	
+	// 测试播放
+	AVPlayerItem * newPlayerItem = [AVPlayerItem playerItemWithAsset:mc];
+	self.player = [AVPlayer playerWithPlayerItem:newPlayerItem];
+	self.playerView.player = self.player;
+	[self.playerView setVideoFillMode:AVLayerVideoGravityResizeAspectFill];
+	[self.playerView setHidden:NO];
+	[self.playerView.player play];
 }
 
 - (void)didReceiveMemoryWarning {
