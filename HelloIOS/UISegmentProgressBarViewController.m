@@ -135,7 +135,7 @@
 		}
 	}
 	else if (sender == self.mDeleteBtn)
-	{HelloIOS/CaptureToolKit.h
+	{
 		if (!self.mIsRecording)
 		{
 			if (!self.mIsCanDelete)
