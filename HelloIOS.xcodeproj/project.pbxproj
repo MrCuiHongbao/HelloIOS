@@ -16,6 +16,9 @@
 		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
 		1E7D3BDA1EB5EDB800FCE97A /* VideoCompositionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */; };
+		1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */; };
+		1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */; };
+		1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */; };
 		1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA426311D5499AD008B96A7 /* EntryCell.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
@@ -49,6 +52,12 @@
 		1E54A8761D53896F004ABE82 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		1E7D3BD81EB5EDB800FCE97A /* VideoCompositionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoCompositionController.h; sourceTree = "<group>"; };
 		1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoCompositionController.m; sourceTree = "<group>"; };
+		1E7D3C0B1EB6DA2A00FCE97A /* UISegmentProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISegmentProgressBar.h; sourceTree = "<group>"; };
+		1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UISegmentProgressBar.m; sourceTree = "<group>"; };
+		1E7D3C111EB6DAEA00FCE97A /* CaptureToolKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaptureToolKit.h; sourceTree = "<group>"; };
+		1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CaptureToolKit.m; sourceTree = "<group>"; };
+		1E7D3C141EB6DCE500FCE97A /* UISegmentProgressBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISegmentProgressBarViewController.h; sourceTree = "<group>"; };
+		1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UISegmentProgressBarViewController.m; sourceTree = "<group>"; };
 		1EA426301D5499AD008B96A7 /* EntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryCell.h; sourceTree = "<group>"; };
 		1EA426311D5499AD008B96A7 /* EntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EntryCell.m; sourceTree = "<group>"; };
 		1EC2E5F01CC2662600A5FC44 /* HelloIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +97,8 @@
 			children = (
 				1E13AC491DFAAB8400455A03 /* UITableView1.h */,
 				1E13AC4A1DFAAB8400455A03 /* UITableView1.m */,
+				1E7D3C0B1EB6DA2A00FCE97A /* UISegmentProgressBar.h */,
+				1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */,
 			);
 			name = Widgets;
 			sourceTree = "<group>";
@@ -110,8 +121,19 @@
 				1E27C8701EB57B1D00405D68 /* UserDefine.h */,
 				1E7D3BD81EB5EDB800FCE97A /* VideoCompositionController.h */,
 				1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */,
+				1E7D3C141EB6DCE500FCE97A /* UISegmentProgressBarViewController.h */,
+				1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */,
 			);
 			name = Demo;
+			sourceTree = "<group>";
+		};
+		1E7D3C101EB6DAC100FCE97A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				1E7D3C111EB6DAEA00FCE97A /* CaptureToolKit.h */,
+				1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */,
+			);
+			name = Utils;
 			sourceTree = "<group>";
 		};
 		1EC2E5E71CC2662600A5FC44 = {
@@ -135,28 +157,29 @@
 		1EC2E5F21CC2662600A5FC44 /* HelloIOS */ = {
 			isa = PBXGroup;
 			children = (
-				1E13AC481DFAAB0A00455A03 /* Widgets */,
-				1E54A8781D5389CD004ABE82 /* Demo */,
 				1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */,
-				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
-				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
-				1EC2E5FA1CC2662600A5FC44 /* ViewController.m */,
-				3407599C1D58905600089DB2 /* TableViewCell.h */,
-				3407599D1D58905600089DB2 /* TableViewCell.m */,
-				34C510BB1D5C754B00E4A0BC /* Main.storyboard */,
-				34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */,
-				34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */,
 				34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */,
-				34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */,
 				34C510BE1D5C754B00E4A0BC /* BiggerTableViewController.h */,
-				34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */,
-				1EC2E6021CC2662600A5FC44 /* Assets.xcassets */,
-				1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */,
-				1EC2E6071CC2662600A5FC44 /* Info.plist */,
-				1EC2E5FF1CC2662600A5FC44 /* HelloIOS.xcdatamodeld */,
-				1EC2E5F31CC2662600A5FC44 /* Supporting Files */,
 				1EA426301D5499AD008B96A7 /* EntryCell.h */,
+				34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */,
+				3407599C1D58905600089DB2 /* TableViewCell.h */,
+				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
+				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
+				34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */,
+				34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */,
 				1EA426311D5499AD008B96A7 /* EntryCell.m */,
+				34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */,
+				3407599D1D58905600089DB2 /* TableViewCell.m */,
+				1EC2E5FA1CC2662600A5FC44 /* ViewController.m */,
+				1EC2E6071CC2662600A5FC44 /* Info.plist */,
+				34C510BB1D5C754B00E4A0BC /* Main.storyboard */,
+				1EC2E6021CC2662600A5FC44 /* Assets.xcassets */,
+				1E54A8781D5389CD004ABE82 /* Demo */,
+				1EC2E5FF1CC2662600A5FC44 /* HelloIOS.xcdatamodeld */,
+				1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */,
+				1EC2E5F31CC2662600A5FC44 /* Supporting Files */,
+				1E7D3C101EB6DAC100FCE97A /* Utils */,
+				1E13AC481DFAAB0A00455A03 /* Widgets */,
 			);
 			path = HelloIOS;
 			sourceTree = "<group>";
@@ -242,6 +265,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */,
 				1E27C86F1EB577CB00405D68 /* RecordController.m in Sources */,
 				1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */,
 				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
@@ -257,6 +281,8 @@
 				3407599E1D58905600089DB2 /* TableViewCell.m in Sources */,
 				34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
+				1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */,
+				1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */,
 				1EC2E5F51CC2662600A5FC44 /* main.m in Sources */,
 				1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */,
 			);

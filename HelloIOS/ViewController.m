@@ -58,7 +58,8 @@
 				   @"UITableViewEnhancedController",
 				   @"AVPlayerViewController",
 				   @"RecordController",
-				   @"VideoCompositionController"];
+				   @"VideoCompositionController",
+				   @"UISegmentProgressBarViewController"];
 }
 
 - (void)clickBtn:(id)sender
