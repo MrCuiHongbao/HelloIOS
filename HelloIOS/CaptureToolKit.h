@@ -29,4 +29,6 @@
 + (NSString *)getVideoMergeFilePathString;
 + (NSString *)getVideoSaveFolderPathString;
 
++ (void)writeVideoToPhotoLibrary:(NSURL *)url;
+
 @end

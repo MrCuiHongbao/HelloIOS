@@ -100,4 +100,12 @@
 	return path;
 }
 
++ (void)writeVideoToPhotoLibrary:(NSURL *)url
+{
+	if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum([url path]))
+	{
+		UISaveVideoAtPathToSavedPhotosAlbum([url path], nil, nil, nil);
+	}
+}
+
 @end

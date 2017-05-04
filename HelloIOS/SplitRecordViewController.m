@@ -7,6 +7,7 @@
 //
 
 #import "SplitRecordViewController.h"
+#import "CaptureToolKit.h"
 
 #pragma mark - Custom GLKView
 
@@ -68,9 +69,10 @@
 
 @property (nonatomic, retain) GLKViewWithBounds *feedView;
 
-@property(nonatomic,strong) AVAssetReaderTrackOutput *assetReaderOutput;
+@property(nonatomic,strong) AVAssetReaderTrackOutput *assetVideoReaderOutput;
+@property(nonatomic,strong) AVAssetReaderTrackOutput *assetAudioReaderOutput;
 @property(nonatomic,strong) AVAssetReader *reader;
-@property(nonatomic,assign) CMSampleBufferRef buffer;
+@property(nonatomic,assign) CMSampleBufferRef videoBuffer;
 @property(nonatomic,strong) NSTimer *timer;
 
 @property (nonatomic, strong) NSURL *sourceVideoPath;
@@ -78,6 +80,7 @@
 @property (nonatomic, strong) UIImagePickerController *imagePickerController;
 
 @property (nonatomic, assign) CVImageBufferRef currentVideoBuffer;
+@property (nonatomic, assign) CVImageBufferRef currentAudioBuffer;
 @property (nonatomic, strong) CIImage *currentVideoImage;
 
 @property (nonatomic, strong) NSLock *lock;
@@ -85,11 +88,14 @@
 @property (nonatomic) BOOL isRecording;
 
 @property (nonatomic, strong) NSString *videoPath;
+@property (nonatomic, strong) NSString *outputVideoPath;
 
+@property (nonatomic, strong) NSDictionary *videoSettings;
 @property (nonatomic, strong) NSDictionary *videoCompressionSettings;
 @property (nonatomic, strong) NSDictionary *audioCompressionSettings;
 @property (nonatomic, strong) NSDictionary *adaptorSettings;
-@property (nonatomic, strong) NSDictionary *readTrackOutputSetting;
+@property (nonatomic, strong) NSDictionary *videoTrackOutputSetting;
+@property (nonatomic, strong) NSDictionary *audioTrackOutputSetting;
 
 @property (nonatomic, assign) FMRecordState writeState;
 
@@ -366,9 +372,6 @@
 			return;
 		}
 		
-		// CoreImage wants BGRA pixel format
-		NSDictionary *outputSettings = @{ (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
-		
 		// create the capture session
 		_captureSession = [[AVCaptureSession alloc] init];
 		_captureSession.sessionPreset = preset;
@@ -376,7 +379,7 @@
 		// create and configure video data output
 		
 		AVCaptureVideoDataOutput *videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
-		videoDataOutput.videoSettings = outputSettings;
+		videoDataOutput.videoSettings = self.videoSettings;
 		[videoDataOutput setSampleBufferDelegate:self queue:self.sessionQueue];
 		
 		// begin configure capture session
@@ -402,8 +405,8 @@
 	});
 }
 
-- (NSString *)createVideoFilePath {
-	if (!self.videoPath) {
+- (NSString *)videoPath {
+	if (!_videoPath) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 		NSString *outpathURL = paths[0];
 		NSFileManager *mgr = [NSFileManager defaultManager];
@@ -411,14 +414,29 @@
 		outpathURL = [outpathURL stringByAppendingPathComponent:@"output.mp4"];
 		[mgr removeItemAtPath:outpathURL error:nil];
 		
-		self.videoPath = outpathURL;
+		_videoPath = outpathURL;
 	}
 	
-	return self.videoPath;
+	return _videoPath;
+}
+
+- (NSString *)outputVideoPath {
+	if (!_outputVideoPath) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+		NSString *outpathURL = paths[0];
+		NSFileManager *mgr = [NSFileManager defaultManager];
+		[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
+		outpathURL = [outpathURL stringByAppendingPathComponent:@"output1.mp4"];
+		[mgr removeItemAtPath:outpathURL error:nil];
+		
+		_outputVideoPath = outpathURL;
+	}
+	
+	return _outputVideoPath;
 }
 
 - (void)setupWriter {
-	NSURL *outputURL = [[NSURL alloc] initFileURLWithPath:[self createVideoFilePath]];
+	NSURL *outputURL = [[NSURL alloc] initFileURLWithPath:self.videoPath];
 	self.writer = [AVAssetWriter assetWriterWithURL:outputURL fileType:AVFileTypeMPEG4 error:nil];
  
 	_writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoCompressionSettings];
@@ -455,8 +473,16 @@
 	return CGSizeMake(width, height);
 }
 
-- (NSDictionary*) adaptorSettings
-{
+- (NSDictionary*) videoSettings {
+	// CoreImage wants BGRA pixel format
+	if (!_videoSettings) {
+		_videoSettings = @{ (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
+	}
+	
+	return _videoSettings;
+}
+
+- (NSDictionary*) adaptorSettings {
 	if (!_adaptorSettings) {
 		CGSize resolution = [self recordResolution];
 		
@@ -508,14 +534,24 @@
 	return _audioCompressionSettings;
 }
 
-- (NSDictionary *)readTrackOutputSetting {
-	if (!_readTrackOutputSetting) {
-		_readTrackOutputSetting = @{ (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
+- (NSDictionary *)videoTrackOutputSetting {
+	if (!_videoTrackOutputSetting) {
+		_videoTrackOutputSetting = @{ (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
 									   (id)kCVPixelBufferWidthKey : @(480),
 									   (id)kCVPixelBufferHeightKey : @(320) };
 	}
 	
-	return _readTrackOutputSetting;
+	return _videoTrackOutputSetting;
+}
+
+- (NSDictionary *)audioTrackOutputSetting {
+	if (!_audioTrackOutputSetting) {
+		_audioTrackOutputSetting = @{ (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
+									  (id)kCVPixelBufferWidthKey : @(480),
+									  (id)kCVPixelBufferHeightKey : @(320) };
+	}
+	
+	return _audioTrackOutputSetting;
 }
 
 /**
@@ -797,20 +833,6 @@
 
 #pragma mark video
 
-- (void)startReading:(NSURL *)videoFile {
-	AVAsset *asset = [[AVURLAsset alloc] initWithURL:videoFile options:nil];
-	NSError *error = nil;
-	
-	_reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
-	
-	NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-	AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
-	
-	_assetReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:self.readTrackOutputSetting];
-	[_reader addOutput:_assetReaderOutput];
-	[_reader startReading];
-}
-
 - (void)startRecord {
 	_timer = [NSTimer scheduledTimerWithTimeInterval:1.0/30.0 target:self selector:@selector(readVideoFile) userInfo:nil repeats:YES];
 	[_timer fire];
@@ -827,14 +849,33 @@
 	[self stopWrite];
 }
 
+- (void)startReading:(NSURL *)videoFile {
+	AVAsset *asset = [[AVURLAsset alloc] initWithURL:videoFile options:nil];
+	NSError *error = nil;
+	
+	_reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
+	
+	NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+	AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
+	
+	_assetVideoReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:self.videoTrackOutputSetting];
+	[_reader addOutput:_assetVideoReaderOutput];
+	
+//	NSArray *audioTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+//	AVAssetTrack *audioTrack = [audioTracks objectAtIndex:0];
+	
+//	_assetAudioReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:audioTrack outputSettings:self.audioTrackOutputSetting];
+//	[_reader addOutput:_assetAudioReaderOutput];
+	
+	[_reader startReading];
+}
+
 -(void)readVideoFile {
 	if ([_reader status] == AVAssetReaderStatusReading) {
-		_buffer = [_assetReaderOutput copyNextSampleBuffer];
-		CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(_buffer);
+		_videoBuffer = [_assetVideoReaderOutput copyNextSampleBuffer];
+		CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(_videoBuffer);
 		
 		if (pixelBuffer) {
-			[self.delegate processVideoFrame:pixelBuffer];
-			
 			[self.lock lock];
 			if (self.currentVideoBuffer) {
 				CFRelease(self.currentVideoBuffer);
@@ -994,9 +1035,11 @@
 		if(_writer && _writer.status == AVAssetWriterStatusWriting){
 			dispatch_async(_writerQueue, ^{
 				[_writer finishWritingWithCompletionHandler:^{
-					ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
-					[lib writeVideoAtPathToSavedPhotosAlbum:[NSURL URLWithString:weakSelf.videoPath] completionBlock:nil];
+					//[CaptureToolKit writeVideoToPhotoLibrary:[NSURL URLWithString:weakSelf.videoPath]];
 					
+					if (![weakSelf mergeAudioAndVideo:[NSURL fileURLWithPath:self.videoPath] audio:self.sourceVideoPath]) {
+						[CaptureToolKit writeVideoToPhotoLibrary:[NSURL fileURLWithPath:weakSelf.videoPath]];
+					}
 				}];
 			});
 		}
@@ -1004,20 +1047,105 @@
 		return;
 	}
 	
-	//[_writerInput markAsFinished];
-	//	if (CMTIME_IS_VALID(_currentEncodeBufferTime)) {
-	//		[_writer endSessionAtSourceTime:_currentEncodeBufferTime];
-	//	}
-	
+	self.writeState = FMRecordStateFinish;
+	[self.timer invalidate];
+	self.timer = nil;
 	__weak __typeof(self)weakSelf = self;
 	if(_writer && _writer.status == AVAssetWriterStatusWriting) {
-		[_writer finishWritingWithCompletionHandler:^{
-			CVPixelBufferPoolRelease(_writerInputPixelBufferAdaptor.pixelBufferPool);
-			ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
-			[lib writeVideoAtPathToSavedPhotosAlbum:[NSURL URLWithString:weakSelf.videoPath] completionBlock:nil];
-			
-		}];
+		dispatch_async(_writerQueue, ^{
+			[_writer finishWritingWithCompletionHandler:^{
+				CVPixelBufferPoolRelease(_writerInputPixelBufferAdaptor.pixelBufferPool);
+				//[CaptureToolKit writeVideoToPhotoLibrary:[NSURL URLWithString:weakSelf.videoPath]];
+				
+				if (![weakSelf mergeAudioAndVideo:[NSURL fileURLWithPath:self.videoPath] audio:self.sourceVideoPath]) {
+					[CaptureToolKit writeVideoToPhotoLibrary:[NSURL URLWithString:weakSelf.videoPath]];
+				}
+			}];
+		});
 	}
+}
+
+- (BOOL)mergeAudioAndVideo:(NSURL *)videoFile audio:(NSURL *)audioFromVideoFile {
+	// 创建拼接工程
+	AVMutableComposition* mc = [[AVMutableComposition alloc] init];
+	
+	// 添加视频和音频轨道
+	AVMutableCompositionTrack *videoTrack = [mc addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+	AVMutableCompositionTrack *audioTrack = [mc addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+	
+	AVURLAsset* asset1 = [AVURLAsset URLAssetWithURL:videoFile options:nil];
+	if ([asset1 tracksWithMediaType:AVMediaTypeVideo].count == 0) {
+		NSLog(@"NO video track...");
+		return NO;
+	}
+	AVAssetTrack *videoAsset = [[asset1 tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+	[videoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset1.duration) ofTrack:videoAsset atTime:kCMTimeZero error:nil];
+
+	
+	AVURLAsset* asset2 = [AVURLAsset URLAssetWithURL:audioFromVideoFile options:nil];
+	if ([asset2 tracksWithMediaType:AVMediaTypeAudio].count == 0) {
+		NSLog(@"NO audio track...");
+		return NO;
+	}
+	AVAssetTrack *audioAsset = [[asset2 tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+	[audioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset2.duration) ofTrack:audioAsset atTime:kCMTimeZero error:nil];
+	
+	// 90度旋转
+	CGAffineTransform translateToCenter = CGAffineTransformMakeTranslation(videoAsset.naturalSize.height, 0.0);
+	CGAffineTransform mixedTransform = CGAffineTransformRotate(translateToCenter, M_PI_2);
+	
+	// 视频指令工程
+	AVMutableVideoCompositionInstruction *roateInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+	roateInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, asset1.duration);
+	
+	// 视频旋转
+	AVMutableVideoCompositionLayerInstruction *roateLayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+	[roateLayerInstruction setTransform:mixedTransform atTime:kCMTimeZero];
+	roateInstruction.layerInstructions = @[roateLayerInstruction];
+	
+	// 视频工程
+	AVMutableVideoComposition *waterMarkVideoComposition = [AVMutableVideoComposition videoComposition];
+	waterMarkVideoComposition.frameDuration = CMTimeMake(1, 30);
+	waterMarkVideoComposition.renderSize = videoAsset.naturalSize;
+	waterMarkVideoComposition.instructions = @[roateInstruction];
+	
+	// 导出
+	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPresetMediumQuality];
+	exportSession.videoComposition = waterMarkVideoComposition;
+	exportSession.outputURL = [NSURL fileURLWithPath:self.outputVideoPath];
+	exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+	[exportSession exportAsynchronouslyWithCompletionHandler:^(void){
+		switch(exportSession.status)
+		{
+			case AVAssetExportSessionStatusCompleted:
+			{
+				[CaptureToolKit writeVideoToPhotoLibrary:[NSURL fileURLWithPath:self.outputVideoPath]];
+				NSLog(@"export completed...");
+				break;
+			}
+			case AVAssetExportSessionStatusFailed:
+			{
+				NSLog(@"export failed...");
+				break;
+			}
+			case AVAssetExportSessionStatusCancelled:
+			{
+				NSLog(@"export cancel...");
+				break;
+			}
+			case AVAssetExportSessionStatusWaiting:
+			{
+				NSLog(@"export waiting...");
+				break;
+			}
+			case AVAssetExportSessionStatusUnknown:
+			{
+				break;
+			}
+		}
+	}];
+	
+	return YES;
 }
 
 - (void)destroyWrite{
