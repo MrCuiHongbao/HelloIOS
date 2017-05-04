@@ -59,7 +59,8 @@
 				   @"AVPlayerViewController",
 				   @"RecordController",
 				   @"VideoCompositionController",
-				   @"UISegmentProgressBarViewController"];
+				   @"UISegmentProgressBarViewController",
+				   @"SplitRecordViewController"];
 }
 
 - (void)clickBtn:(id)sender
