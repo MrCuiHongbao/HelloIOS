@@ -27,7 +27,7 @@
 
 #pragma mark - View Controller
 
-@interface SplitRecordViewController () <AVCaptureVideoDataOutputSampleBufferDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface SplitRecordViewController () <AVCaptureVideoDataOutputSampleBufferDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AVPlayerItemOutputPullDelegate>
 
 @property (nonatomic, retain) UIButton *closeBtn;
 
@@ -42,6 +42,8 @@
 @property (nonatomic, strong) CALayer *previewLayer;
 
 @property (nonatomic, retain) UIView *lineView;
+
+@property (nonatomic, retain) UILabel *durationView;
 
 @property (nonatomic, assign) int sw;
 @property (nonatomic, assign) int sh;
@@ -69,17 +71,21 @@
 
 @property (nonatomic, retain) GLKViewWithBounds *feedView;
 
-@property(nonatomic,strong) AVAssetReaderTrackOutput *assetVideoReaderOutput;
-@property(nonatomic,strong) AVAssetReaderTrackOutput *assetAudioReaderOutput;
-@property(nonatomic,strong) AVAssetReader *reader;
-@property(nonatomic,assign) CMSampleBufferRef videoBuffer;
-@property(nonatomic,strong) NSTimer *timer;
+@property (nonatomic,strong) AVAssetReaderTrackOutput *assetVideoReaderOutput;
+@property (nonatomic,strong) AVAssetReaderTrackOutput *assetAudioReaderOutput;
+@property (nonatomic,strong) AVAssetReader *reader;
+@property (nonatomic, strong) AVURLAsset *videoAsset;
+@property (nonatomic,strong) NSTimer *timer;
+@property (nonatomic, assign) CGFloat frameTime;
+
+@property AVPlayerItemVideoOutput *videoOutput;
+@property CADisplayLink *displayLink;
 
 @property (nonatomic, strong) NSURL *sourceVideoPath;
 
 @property (nonatomic, strong) UIImagePickerController *imagePickerController;
 
-@property (nonatomic, assign) CVImageBufferRef currentVideoBuffer;
+@property (nonatomic, assign) CMSampleBufferRef currentVideoBuffer;
 @property (nonatomic, assign) CVImageBufferRef currentAudioBuffer;
 @property (nonatomic, strong) CIImage *currentVideoImage;
 
@@ -101,6 +107,9 @@
 
 @property (nonatomic, assign) BOOL canWrite;
 
+@property (nonatomic, assign) CGFloat sumTime;
+@property (nonatomic, assign) BOOL needRefresh;
+
 @end
 
 @implementation SplitRecordViewController
@@ -112,6 +121,8 @@
 	
 	return self;
 }
+
+#pragma mark init view
 
 - (GLKViewWithBounds *)feedView {
 	if (!_feedView) {
@@ -170,10 +181,8 @@
 	return _pickerBtn;
 }
 
-- (UIImagePickerController *)imagePickerController
-{
-	if (!_imagePickerController)
-	{
+- (UIImagePickerController *)imagePickerController {
+	if (!_imagePickerController) {
 		_imagePickerController = [[UIImagePickerController alloc] init];
 		_imagePickerController.delegate = self;
 		_imagePickerController.allowsEditing = NO;
@@ -182,20 +191,13 @@
 	return _imagePickerController;
 }
 
-- (void)onClickBtn:(id)sender {
-	if (sender == self.closeBtn) {
-		[self.navigationController popViewControllerAnimated:YES];
-	} else if (sender == self.pickerBtn) {
-		self.imagePickerController.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-		self.imagePickerController.mediaTypes = [[NSArray alloc] initWithObjects:@"public.movie", nil];
-		[self presentViewController:self.imagePickerController animated:YES completion:nil];
-	} else if (sender == self.recordBtn) {
-		if (self.writeState == FMRecordStateInit) {
-			[self startRecord];
-		} else if (self.writeState == FMRecordStateRecording){
-			[self stopRecord];
-		}
+- (UILabel *)durationView {
+	if (!_durationView) {
+		_durationView = [[UILabel alloc] initWithFrame:CGRectMake(10, 60, 100, 60)];
+		[_durationView setBackgroundColor:[UIColor colorWithWhite:0.3 alpha:1]];
 	}
+	
+	return _durationView;
 }
 
 - (UIView *)previewView {
@@ -218,6 +220,40 @@
 	return _lineView;
 }
 
+- (void)onClickBtn:(id)sender {
+	if (sender == self.closeBtn) {
+		[self.navigationController popViewControllerAnimated:YES];
+	} else if (sender == self.pickerBtn) {
+		self.imagePickerController.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+		self.imagePickerController.mediaTypes = [[NSArray alloc] initWithObjects:@"public.movie", nil];
+		[self presentViewController:self.imagePickerController animated:YES completion:nil];
+	} else if (sender == self.recordBtn) {
+		if (self.writeState == FMRecordStateInit) {
+			[self startRecord];
+		} else if (self.writeState == FMRecordStateRecording){
+			[self stopRecord];
+			
+			dispatch_async(dispatch_get_main_queue(), ^(void){
+				[self _showAlertViewWithMessage:@"录制完成"];
+			});
+		} else if (self.writeState == FMRecordStateFinish) {
+			dispatch_async(dispatch_get_main_queue(), ^(void){
+				[self _showAlertViewWithMessage:@"已录制完成"];
+			});
+		}
+	} else if (sender == self.deleteBtn) {
+		if (self.writeState == FMRecordStateFinish) {
+			self.writeState = FMRecordStateInit;
+			if (self.currentVideoBuffer) {
+				CFRelease(self.currentVideoBuffer);
+				self.currentVideoBuffer = nil;
+			}
+		}
+	}
+}
+
+#pragma mark vc lifecycle
+
 - (void)initData {
 	self.sw = [[UIScreen mainScreen] bounds].size.width;
 	self.sh = [[UIScreen mainScreen] bounds].size.height;
@@ -228,6 +264,7 @@
 	[self.view addSubview:self.deleteBtn];
 	[self.view addSubview:self.recordBtn];
 	[self.view addSubview:self.pickerBtn];
+	[self.view addSubview:self.durationView];
 }
 
 - (void)setupPreview {
@@ -291,6 +328,18 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)setupLink {
+	// Setup CADisplayLink which will callback displayPixelBuffer: at every vsync.
+	self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
+	[[self displayLink] addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[[self displayLink] setPaused:YES];
+	
+	// Setup AVPlayerItemVideoOutput with the required pixelbuffer attributes.
+	NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
+	self.videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+	[[self videoOutput] setDelegate:self queue:_writerQueue];
 }
 
 #pragma mark - Feed Views
@@ -435,37 +484,7 @@
 	return _outputVideoPath;
 }
 
-- (void)setupWriter {
-	NSURL *outputURL = [[NSURL alloc] initFileURLWithPath:self.videoPath];
-	self.writer = [AVAssetWriter assetWriterWithURL:outputURL fileType:AVFileTypeMPEG4 error:nil];
- 
-	_writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoCompressionSettings];
-	//expectsMediaDataInRealTime 必须设为yes，需要从capture session 实时获取数据
-	_writerInput.expectsMediaDataInRealTime = YES;
-	_writerInput.transform = CGAffineTransformMakeRotation(M_PI / 2.0);
- 
-//	_assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:self.audioCompressionSettings];
-//	_assetWriterAudioInput.expectsMediaDataInRealTime = YES;
- 
- 
-	if ([_writer canAddInput:_writerInput]) {
-		[_writer addInput:_writerInput];
-	}else {
-		NSLog(@"AssetWriter videoInput append Failed");
-	}
-	
-//	if ([_assetWriter canAddInput:_assetWriterAudioInput]) {
-//		[_assetWriter addInput:_assetWriterAudioInput];
-//	}else {
-//		NSLog(@"AssetWriter audioInput Append Failed");
-//	}
-	
-	_writerInputPixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:_writerInput sourcePixelBufferAttributes:self.adaptorSettings];
-	
-	[_writer startWriting];
- 
-	self.writeState = FMRecordStateRecording;
-}
+
 
 - (CGSize)recordResolution {
 	int width = CGRectGetWidth(self.feedView.frame);
@@ -629,7 +648,7 @@
 		NSURL *url = info[UIImagePickerControllerMediaURL];
 		self.sourceVideoPath = url;
 		
-		[self startReading:url];
+		//[self startReading:url];
 		
 		NSLog(@"picker video path %@", url.absoluteString);
 	}
@@ -644,8 +663,7 @@
 #pragma mark AVCaptureVideoDataOutputSampleBufferDelegate
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-	CVImageBufferRef videoBuffer = self.currentVideoBuffer;
-	if (videoBuffer) {
+	if (self.currentVideoBuffer) {
 		[self renderByGL1:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
 		return;
 	}
@@ -661,18 +679,25 @@
 - (void)renderByGL1:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 	CMFormatDescriptionRef formatDesc = CMSampleBufferGetFormatDescription(sampleBuffer);
 	
-	[self.lock lock];
-	
 	// update the video dimensions information
 	_currentVideoDimensions = CMVideoFormatDescriptionGetDimensions(formatDesc);
+	CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
 	
 	CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 	CIImage *sourceImage = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
 	
-	CVImageBufferRef videoBuffer = self.currentVideoBuffer;
+	[self.lock lock];
+	
+	CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
 	CIImage *sourceVideo = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
 	
+	// 合成视频帧
 	CIImage *destImage = [self renderFrameLeft:sourceImage right:sourceVideo];
+//	
+//	CFRelease(self.currentVideoBuffer);
+//	self.currentVideoBuffer = nil;
+	
+	[self.lock unlock];
 	
 	[self.feedView bindDrawable];
 	
@@ -680,7 +705,7 @@
 		[EAGLContext setCurrentContext:_eaglContext];
 	}
 	
-	// clear eagl view to grey
+	// clear eagl view to black
 	glClearColor(0, 0, 0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -688,24 +713,21 @@
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	
+	// 绘制视频帧到屏幕上
 	if (destImage) {
 		[_ciContext drawImage:destImage inRect:_feedView.viewBounds fromRect:destImage.extent];
 	}
 	
-	[self.lock unlock];
-	
 	[_feedView display];
 	
+	// 输出视频帧到文件
 	if (self.writeState == FMRecordStateRecording) {
 		CVPixelBufferRef renderBuffer = NULL;
 		CVPixelBufferPoolCreatePixelBuffer(NULL, _writerInputPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
 		CVPixelBufferLockBaseAddress(renderBuffer, 0);
 		[_ciContext render:destImage toCVPixelBuffer:renderBuffer bounds:_feedView.viewBounds colorSpace:NULL];
 		CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
-		
-		//if (connection == [_captureVideoDataOutput connectionWithMediaType:AVMediaTypeVideo]) {
-		[self appendSampleBuffer:sampleBuffer ofMediaType:AVMediaTypeVideo CVPixelBufferRef:renderBuffer];
-		//}
+		[self appendSampleBuffer:AVMediaTypeVideo CVPixelBufferRef:renderBuffer withPresentationTime:presentationTime];
 	}
 }
 
@@ -831,18 +853,23 @@
 	CGColorSpaceRelease(grayColorSpace);
 }
 
+#pragma mark video link
+- (void)displayLinkCallback:(id)sender {
+	
+}
+
 #pragma mark video
 
 - (void)startRecord {
-	_timer = [NSTimer scheduledTimerWithTimeInterval:1.0/30.0 target:self selector:@selector(readVideoFile) userInfo:nil repeats:YES];
+	[self startReading:self.sourceVideoPath];
+	
+	_timer = [NSTimer scheduledTimerWithTimeInterval:_frameTime target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
 	[_timer fire];
 	
 	[self startWrite];
 }
 
 - (void)stopRecord {
-	self.writeState = FMRecordStateInit;
-	
 	[_timer invalidate];
 	_timer = nil;
 	
@@ -850,59 +877,92 @@
 }
 
 - (void)startReading:(NSURL *)videoFile {
-	AVAsset *asset = [[AVURLAsset alloc] initWithURL:videoFile options:nil];
-	NSError *error = nil;
-	
-	_reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
-	
-	NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-	AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
-	
-	_assetVideoReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:self.videoTrackOutputSetting];
-	[_reader addOutput:_assetVideoReaderOutput];
-	
-//	NSArray *audioTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
-//	AVAssetTrack *audioTrack = [audioTracks objectAtIndex:0];
-	
-//	_assetAudioReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:audioTrack outputSettings:self.audioTrackOutputSetting];
-//	[_reader addOutput:_assetAudioReaderOutput];
-	
-	[_reader startReading];
+	if (!_reader) {
+		AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videoFile options:nil];
+		_videoAsset = asset;
+		NSError *error = nil;
+		
+		_reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
+		
+		NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+		if (videoTracks.count == 0) {
+			NSLog(@"NO video track...");
+			return;
+		}
+		AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
+		
+		CMTime duration = [asset duration];
+		CGFloat sumTime = duration.value / duration.timescale;
+		CGFloat sumFrame = sumTime * videoTrack.nominalFrameRate;
+		CGFloat totalTime = CMTimeGetSeconds(duration);
+		CGFloat frameTime = totalTime / sumFrame;
+		_frameTime = frameTime;
+		_sumTime = sumTime;
+		_needRefresh = YES;
+		
+		_assetVideoReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:self.videoTrackOutputSetting];
+		[_reader addOutput:_assetVideoReaderOutput];
+		
+		//	NSArray *audioTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+		//	AVAssetTrack *audioTrack = [audioTracks objectAtIndex:0];
+		
+		//	_assetAudioReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:audioTrack outputSettings:self.audioTrackOutputSetting];
+		//	[_reader addOutput:_assetAudioReaderOutput];
+		
+		if (![_reader startReading]) {
+			AVAssetReaderStatus status = [_reader status];
+			NSError *err = [_reader error];
+		}
+	}
 }
 
--(void)readVideoFile {
-	if ([_reader status] == AVAssetReaderStatusReading) {
-		_videoBuffer = [_assetVideoReaderOutput copyNextSampleBuffer];
-		CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(_videoBuffer);
-		
-		if (pixelBuffer) {
-			[self.lock lock];
-			if (self.currentVideoBuffer) {
-				CFRelease(self.currentVideoBuffer);
+-(void)onTimer {
+	dispatch_async(_writerQueue, ^(void){
+		if ([_reader status] == AVAssetReaderStatusReading) {
+			CMSampleBufferRef videoBuffer = [_assetVideoReaderOutput copyNextSampleBuffer];
+			if (videoBuffer) {
+				[self.lock lock];
+				
+				// 有可能录制帧率没有视频帧率高，会丢视频帧，这里要把录制没有处理的视频帧释放掉
+				if (self.currentVideoBuffer) {
+					CFRelease(self.currentVideoBuffer);
+					self.currentVideoBuffer = nil;
+				}
+				
+				self.currentVideoBuffer = videoBuffer;
+				
+				CMTime durationTime = [_videoAsset duration];
+				CMTime presentTime = CMSampleBufferGetPresentationTimeStamp(videoBuffer);
+				CGFloat leftSeconds = CMTimeGetSeconds(CMTimeSubtract(durationTime, presentTime));
+				self.sumTime = leftSeconds;
+				self.needRefresh = YES;
+				
+				[self.lock unlock];
 			}
 			
-			self.currentVideoBuffer = pixelBuffer;
-			[self.lock unlock];
+			return;
 		}
 		
-	} else {
+		// 读完视频文件，销毁资源
 		[_timer invalidate];
 		_timer = nil;
+		
+		[_reader cancelReading];
+		_reader = nil;
+		
+		_videoAsset = nil;
 		
 		[self stopRecord];
 		
 		dispatch_async(dispatch_get_main_queue(), ^(void){
 			[self _showAlertViewWithMessage:@"录制完成"];
 		});
-		
-		
-//		[self.lock lock];
-//		if (self.currentVideoBuffer) {
-//			CFRelease(self.currentVideoBuffer);
-//			self.currentVideoBuffer = nil;
-//		}
-//		[self.lock unlock];
-	}
+	});
+	
+	dispatch_async(dispatch_get_main_queue(), ^(void) {
+		[self.durationView setText:[NSString stringWithFormat:@"%f", self.sumTime]];
+		self.needRefresh = NO;
+	});
 }
 
 - (CIImage *)renderFrameLeft:(CIImage *)image1 right:(CIImage *)image2 {
@@ -944,9 +1004,9 @@
 	return [[CIImage alloc] initWithImage:result];
 }
 
-- (void)appendSampleBuffer:(CMSampleBufferRef)sampleBuffer ofMediaType:(NSString *)mediaType CVPixelBufferRef:(CVPixelBufferRef)pixelBuffer
+- (void)appendSampleBuffer:(NSString *)mediaType CVPixelBufferRef:(CVPixelBufferRef)pixelBuffer withPresentationTime:(CMTime)presentationTime
 {
-	if (sampleBuffer == NULL){
+	if (pixelBuffer == NULL){
 		NSLog(@"empty sampleBuffer");
 		return;
 	}
@@ -958,21 +1018,18 @@
 		}
 	}
 	
-	CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-	//CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-	
-	CFRetain(sampleBuffer);
+	CFRetain(pixelBuffer);
 	dispatch_async(_writerQueue, ^{
 		@autoreleasepool {
 			@synchronized(self) {
 				if (self.writeState > FMRecordStateRecording){
-					CFRelease(sampleBuffer);
+					CFRelease(pixelBuffer);
 					return;
 				}
 			}
 			
 			if (!self.canWrite && mediaType == AVMediaTypeVideo) {
-				[_writer startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
+				[_writer startSessionAtSourceTime:presentationTime];
 				self.canWrite = YES;
 			}
 			
@@ -980,7 +1037,7 @@
 			if (mediaType == AVMediaTypeVideo) {
 				if (_writerInput.isReadyForMoreMediaData) {
 					if (_writerInputPixelBufferAdaptor) {
-						BOOL ret =  [_writerInputPixelBufferAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:frameTime];
+						BOOL ret =  [_writerInputPixelBufferAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:presentationTime];
 						if (!ret) {
 							@synchronized (self) {
 								[self stopWrite];
@@ -988,13 +1045,13 @@
 							}
 						}
 					} else {
-						BOOL success = [_writerInput appendSampleBuffer:sampleBuffer];
-						if (!success) {
-							@synchronized (self) {
-								[self stopWrite];
-								[self destroyWrite];
-							}
-						}
+//						BOOL success = [_writerInput appendSampleBuffer:pixelBuffer];
+//						if (!success) {
+//							@synchronized (self) {
+//								[self stopWrite];
+//								[self destroyWrite];
+//							}
+//						}
 					}
 				}
 			}
@@ -1012,7 +1069,7 @@
 //				}
 //			}
 			
-			CFRelease(sampleBuffer);
+			CFRelease(pixelBuffer);
 		}
 	} );
 }
@@ -1020,17 +1077,47 @@
 - (void)startWrite
 {
 	self.writeState = FMRecordStatePrepareRecording;
+	[self setupWriter];
+}
+
+- (void)setupWriter {
 	if (!_writer) {
-		[self setupWriter];
+		NSURL *outputURL = [[NSURL alloc] initFileURLWithPath:self.videoPath];
+		self.writer = [AVAssetWriter assetWriterWithURL:outputURL fileType:AVFileTypeMPEG4 error:nil];
+		
+		_writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoCompressionSettings];
+		//expectsMediaDataInRealTime 必须设为yes，需要从capture session 实时获取数据
+		_writerInput.expectsMediaDataInRealTime = YES;
+		_writerInput.transform = CGAffineTransformMakeRotation(M_PI / 2.0);
+		
+		//	_assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:self.audioCompressionSettings];
+		//	_assetWriterAudioInput.expectsMediaDataInRealTime = YES;
+		
+		if ([_writer canAddInput:_writerInput]) {
+			[_writer addInput:_writerInput];
+		}else {
+			NSLog(@"AssetWriter videoInput append Failed");
+		}
+		
+		//	if ([_assetWriter canAddInput:_assetWriterAudioInput]) {
+		//		[_assetWriter addInput:_assetWriterAudioInput];
+		//	}else {
+		//		NSLog(@"AssetWriter audioInput Append Failed");
+		//	}
+		
+		_writerInputPixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:_writerInput sourcePixelBufferAttributes:self.adaptorSettings];
+		
+		[_writer startWriting];
+		
+		self.writeState = FMRecordStateRecording;
 	}
 }
+
 - (void)stopWrite
 {
 	if (!_writerInputPixelBufferAdaptor)
 	{
 		self.writeState = FMRecordStateFinish;
-		[self.timer invalidate];
-		self.timer = nil;
 		__weak __typeof(self)weakSelf = self;
 		if(_writer && _writer.status == AVAssetWriterStatusWriting){
 			dispatch_async(_writerQueue, ^{
@@ -1040,6 +1127,8 @@
 					if (![weakSelf mergeAudioAndVideo:[NSURL fileURLWithPath:self.videoPath] audio:self.sourceVideoPath]) {
 						[CaptureToolKit writeVideoToPhotoLibrary:[NSURL fileURLWithPath:weakSelf.videoPath]];
 					}
+					
+					_writer = nil;
 				}];
 			});
 		}
@@ -1048,8 +1137,6 @@
 	}
 	
 	self.writeState = FMRecordStateFinish;
-	[self.timer invalidate];
-	self.timer = nil;
 	__weak __typeof(self)weakSelf = self;
 	if(_writer && _writer.status == AVAssetWriterStatusWriting) {
 		dispatch_async(_writerQueue, ^{
@@ -1060,6 +1147,8 @@
 				if (![weakSelf mergeAudioAndVideo:[NSURL fileURLWithPath:self.videoPath] audio:self.sourceVideoPath]) {
 					[CaptureToolKit writeVideoToPhotoLibrary:[NSURL URLWithString:weakSelf.videoPath]];
 				}
+				
+				_writer = nil;
 			}];
 		});
 	}
@@ -1149,6 +1238,16 @@
 }
 
 - (void)destroyWrite{
+	
+}
+
+#pragma mark AVPlayerItemOutputPullDelegate
+
+- (void)outputMediaDataWillChange:(AVPlayerItemOutput *)sender {
+	
+}
+
+- (void)outputSequenceWasFlushed:(AVPlayerItemOutput *)output {
 	
 }
 
