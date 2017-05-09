@@ -195,9 +195,9 @@
 	}
 }
 
-- (GLKViewWithBounds *)setupRenderWidth:(int)width height:(int)height {
+- (GLKViewWithBounds *)setupRenderWidth:(CGRect)frame {
 	if (!_feedView) {
-		_feedView = [self setupFeedViewWithFrame:CGRectMake(0, 100, width, height)];
+		_feedView = [self setupFeedViewWithFrame:frame];
 		[_feedView setBackgroundColor:[UIColor colorWithWhite:0.1 alpha:1]];
 	}
 	

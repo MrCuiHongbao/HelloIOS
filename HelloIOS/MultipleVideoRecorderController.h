@@ -46,7 +46,7 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 - (void)setupCapture;
 
 // 安装渲染设备
-- (GLKViewWithBounds *)setupRenderWidth:(int)width height:(int)height;
+- (GLKViewWithBounds *)setupRenderWidth:(CGRect)frame;
 
 - (void)setupSourceVideo:(NSString *)sourceVideo;
 

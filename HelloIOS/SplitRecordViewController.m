@@ -190,7 +190,7 @@
 - (void)setupPreview {
 	//[self.view addSubview:self.previewView];
 	
-	_feedView = [_recorderController setupRenderWidth:self.sw height:self.sw];
+	_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 100, self.sw, self.sw)];
 	[self.view addSubview:self.feedView];
 	
 	[self.view addSubview:self.lineView];
