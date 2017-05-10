@@ -157,15 +157,9 @@
 		self.imagePickerController.mediaTypes = [[NSArray alloc] initWithObjects:@"public.movie", nil];
 		[self presentViewController:self.imagePickerController animated:YES completion:nil];
 	} else if (sender == self.recordBtn) {
-		[_recorderController startRecord];
+		[_recorderController toggleRecord];
 	} else if (sender == self.deleteBtn) {
-//		if (self.writeState == FMRecordStateFinish) {
-//			self.writeState = FMRecordStateInit;
-//			if (self.currentVideoBuffer) {
-//				CFRelease(self.currentVideoBuffer);
-//				self.currentVideoBuffer = nil;
-//			}
-//		}
+		[_recorderController deleteLastSplit];
 	}
 }
 

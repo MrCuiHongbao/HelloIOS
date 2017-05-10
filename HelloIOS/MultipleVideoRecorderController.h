@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 typedef NS_ENUM(NSInteger, MultiRecordState) {
 	MultiRecordStateUnknown = 0,
@@ -56,6 +57,9 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 // 销毁录制会话，回收资源
 - (void)destroyRecordSession;
 
+// 录制操作
+- (void)toggleRecord;
+
 // 开始录制分段
 - (BOOL)startRecord;
 
@@ -64,7 +68,8 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 //- (BOOL)canDeleteSplitLast;
 
-// 删除录制分段
-- (BOOL)deleteLastSplit;
+// 删除分段
+// 返回值：0成功；-1失败；1确认删除
+- (int)deleteLastSplit;
 
 @end
