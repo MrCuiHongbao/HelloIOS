@@ -184,7 +184,7 @@
 - (void)setupPreview {
 	//[self.view addSubview:self.previewView];
 	
-	_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 100, self.sw, self.sw)];
+	_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 100, self.sw, self.sw * 1.25)];
 	[self.view addSubview:self.feedView];
 	
 	[self.view addSubview:self.lineView];
@@ -337,8 +337,8 @@
 
 #pragma mark MultipleVideoRecorderControllerDelegate
 
-- (void)recordFinished {
-	[self _showAlertViewWithMessage:@"录制完成"];
+- (void)recordStateChanged:(MultiRecordState)state lastState:(MultiRecordState)lastState {
+	NSLog(@"current record state is %ld, last is %ld", state, lastState);
 }
 
 

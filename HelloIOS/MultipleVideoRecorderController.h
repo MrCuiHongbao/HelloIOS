@@ -31,9 +31,7 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 @protocol MultipleVideoRecorderControllerDelegate <NSObject>
 
-- (void)lastSplitDeleted;
-
-- (void)recordFinished;
+- (void)recordStateChanged:(MultiRecordState)state lastState:(MultiRecordState)lastState;
 
 @end
 
