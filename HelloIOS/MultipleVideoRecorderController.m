@@ -166,6 +166,7 @@
 @property (nonatomic, strong) AVAssetReader *reader;
 @property (nonatomic, strong) AVURLAsset *videoAsset;
 @property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, strong) NSTimer *progressUpdateTimer;
 @property (nonatomic, assign) CGFloat sourceVideoFrameTime;
 @property (nonatomic, assign) CGFloat sourceVideoSumTime;
 @property (nonatomic, assign) CGFloat sourceVideoLeftTime;
@@ -322,7 +323,7 @@
 		}
 		
 		// 获取输出规格
-		NSString *preset = AVCaptureSessionPresetMedium;
+		NSString *preset = AVCaptureSessionPresetHigh;
 		if (![videoDevice supportsAVCaptureSessionPreset:preset])
 		{
 			return;
@@ -364,16 +365,12 @@
 	self.recordState = MultiRecordStateReady;
 }
 
-// 创建录制会话，准备开始录制
-- (void)createRecordSession {
-	self.recordState = MultiRecordStateReady;
-	
-	//[self setupAssetReading:self.sourceVideoPath];
+- (CGFloat)recordDuration {
+	return self.sourceVideoSumTime;
 }
 
-// 销毁录制会话，回收资源
-- (void)destroyRecordSession {
-	self.recordState = MultiRecordStateFinish;
+- (CGFloat)currentDuration {
+	return self.sourceVideoSumTime - self.sourceVideoLeftTime;
 }
 
 - (void)toggleRecord {
@@ -403,6 +400,15 @@
 	_timer = [NSTimer scheduledTimerWithTimeInterval:_sourceVideoFrameTime target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
 	[_timer fire];
 	
+	_progressUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer *timer){
+		if ([self.delegate respondsToSelector:@selector(progressUpdate:duration:)]) {
+			CGFloat current = self.sourceVideoSumTime - self.sourceVideoLeftTime;
+			CGFloat duration = self.sourceVideoSumTime;
+			[self.delegate progressUpdate:current duration:duration];
+		}
+	}];
+	[_progressUpdateTimer fire];
+	
 	return YES;
 }
 
@@ -415,6 +421,9 @@
 	
 	[_timer invalidate];
 	_timer = nil;
+	
+	[_progressUpdateTimer invalidate];
+	_progressUpdateTimer = nil;
 	
 	[self stopAssetWriter];
 	
@@ -568,7 +577,7 @@
 		return;
 	}
 	
-	[self renderByGL:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
+	[self renderByGL1:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -586,17 +595,15 @@
 		CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 		CIImage *sourceImage = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
 		
-		CIImage *destImage = nil;
+		CIImage *sourceVideo = nil;
 		@synchronized(self.lock) {
-			CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
-			CIImage *sourceVideo = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
-			
-			// 合成视频帧
-			destImage = [self renderFrameLeft:sourceImage right:sourceVideo];
-			//
-			//	CFRelease(self.currentVideoBuffer);
-			//	self.currentVideoBuffer = nil;
+			if (self.currentVideoBuffer) {
+				CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
+				sourceVideo = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
+			}
 		}
+		
+		CIImage *destImage = [self renderFrameLeft:sourceImage right:sourceVideo];
 		
 		[self.feedView bindDrawable];
 		
@@ -620,7 +627,7 @@
 		[_feedView display];
 		
 		// 输出视频帧到文件
-		if (self.recordState == MultiRecordStateRecording) {
+		if (self.recordState == MultiRecordStateRecording && sourceVideo) {
 			CVPixelBufferRef renderBuffer = NULL;
 			CVPixelBufferPoolCreatePixelBuffer(NULL, _writerInputPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
 			if (!renderBuffer) {
@@ -631,6 +638,8 @@
 			[_ciContext render:destImage toCVPixelBuffer:renderBuffer bounds:_feedView.viewBounds colorSpace:NULL];
 			CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
 			[self appendSampleBuffer:AVMediaTypeVideo CVPixelBufferRef:renderBuffer withPresentationTime:presentationTime];
+			
+			CFRelease(renderBuffer);
 		}
 	}
 }
@@ -724,34 +733,47 @@
 	CGSize size = self.feedView.viewBounds.size;
 	CGFloat destAsptect = size.width / (size.height / 2);
 	
-	CGRect image1Rect = image1.extent;
-	CGFloat image1Asptect = CGRectGetWidth(image1Rect) / CGRectGetHeight(image1Rect);
-	if (image1Asptect < destAsptect) {
-		image1Rect.origin.y = (CGRectGetHeight(image1Rect) - CGRectGetWidth(image1Rect) / destAsptect) / 2;
-		image1Rect.size.height = CGRectGetWidth(image1Rect) / destAsptect;
-	} else {
-		image1Rect.origin.x = (CGRectGetWidth(image1Rect) - CGRectGetHeight(image1Rect) * destAsptect) / 2;
-		image1Rect.size.width = CGRectGetHeight(image1Rect) * destAsptect;
+	UIImage *tmp1 = nil;
+	UIImage *tmp2 = nil;
+	if (image1) {
+		CGRect image1Rect = image1.extent;
+		CGFloat image1Asptect = CGRectGetWidth(image1Rect) / CGRectGetHeight(image1Rect);
+		if (image1Asptect < destAsptect) {
+			image1Rect.origin.y = (CGRectGetHeight(image1Rect) - CGRectGetWidth(image1Rect) / destAsptect) / 2;
+			image1Rect.size.height = CGRectGetWidth(image1Rect) / destAsptect;
+		} else {
+			image1Rect.origin.x = (CGRectGetWidth(image1Rect) - CGRectGetHeight(image1Rect) * destAsptect) / 2;
+			image1Rect.size.width = CGRectGetHeight(image1Rect) * destAsptect;
+		}
+		CIImage *destImage1 = [image1 imageByCroppingToRect:image1Rect];
+		tmp1 = [[UIImage alloc] initWithCIImage:destImage1];
 	}
-	CIImage *destImage1 = [image1 imageByCroppingToRect:image1Rect];
 	
-	CGRect image2Rect = image2.extent;
-	CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
-	if (image2Asptect < destAsptect) {
-		image2Rect.origin.y = (CGRectGetHeight(image2Rect) - CGRectGetWidth(image2Rect) / destAsptect) / 2;
-		image2Rect.size.height = CGRectGetWidth(image2Rect) / destAsptect;
-	} else {
-		image2Rect.origin.x = (CGRectGetWidth(image2Rect) - CGRectGetHeight(image2Rect) * destAsptect) / 2;
-		image2Rect.size.width = CGRectGetHeight(image2Rect) * destAsptect;
+	if (image2) {
+		CGRect image2Rect = image2.extent;
+		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
+		if (image2Asptect < destAsptect) {
+			image2Rect.origin.y = (CGRectGetHeight(image2Rect) - CGRectGetWidth(image2Rect) / destAsptect) / 2;
+			image2Rect.size.height = CGRectGetWidth(image2Rect) / destAsptect;
+		} else {
+			image2Rect.origin.x = (CGRectGetWidth(image2Rect) - CGRectGetHeight(image2Rect) * destAsptect) / 2;
+			image2Rect.size.width = CGRectGetHeight(image2Rect) * destAsptect;
+		}
+		CIImage *destImage2 = [image2 imageByCroppingToRect:image2Rect];
+		tmp2 = [[UIImage alloc] initWithCIImage:destImage2];
 	}
-	CIImage *destImage2 = [image2 imageByCroppingToRect:image2Rect];
 	
-	UIImage *tmp1 = [[UIImage alloc] initWithCIImage:destImage1];
-	UIImage *tmp2 = [[UIImage alloc] initWithCIImage:destImage2];
 	UIGraphicsBeginImageContext(size);
 	[[UIColor colorWithWhite:0 alpha:1] setFill];
-	[tmp2 drawInRect:CGRectMake(0, 0, size.width, size.height / 2)];
-	[tmp1 drawInRect:CGRectMake(0, size.height / 2, size.width, size.height / 2)];
+	
+	if (tmp2) {
+		[tmp2 drawInRect:CGRectMake(0, 0, size.width, size.height / 2)];
+	}
+	
+	if (tmp1) {
+		[tmp1 drawInRect:CGRectMake(0, size.height / 2, size.width, size.height / 2)];
+	}
+	
 	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
@@ -832,6 +854,7 @@
 		CGFloat frameTime = totalTime / sumFrame;
 		_sourceVideoFrameTime = frameTime;
 		_sourceVideoSumTime = sumTime;
+		_sourceVideoLeftTime = sumTime;
 		
 		_reader.timeRange = CMTimeRangeMake(atTime, kCMTimePositiveInfinity);
 		
@@ -914,6 +937,9 @@
 		[_timer invalidate];
 		_timer = nil;
 		
+		[_progressUpdateTimer invalidate];
+		_progressUpdateTimer = nil;
+		
 		[_reader cancelReading];
 		_reader = nil;
 		
@@ -930,7 +956,7 @@
 	if(_writer && _writer.status == AVAssetWriterStatusWriting) {
 		[_writer finishWritingWithCompletionHandler:^{
 			if (self.recordState == MultiRecordStateFinish) {
-				if (![self mergeAudioAndVideo:[_videoSplitManager getAllSplits] audio:self.sourceVideoPath]) {
+				if (![self exportVideoWithSourceAudio:[_videoSplitManager getAllSplits] audio:self.sourceVideoPath]) {
 					// 合成音频失败，就直接导出没有音频的视频
 					[CaptureToolKit writeVideoToPhotoLibrary:[NSURL fileURLWithPath:[_videoSplitManager getLastRecordFilename]]];
 				}
@@ -942,7 +968,7 @@
 	}
 }
 
-- (BOOL)mergeAudioAndVideo:(NSArray<NSString *> *)videoFiles audio:(NSString *)audioFromVideoFile {
+- (BOOL)exportVideoWithSourceAudio:(NSArray<NSString *> *)videoFiles audio:(NSString *)audioFromVideoFile {
 	// 创建拼接工程
 	AVMutableComposition* mc = [[AVMutableComposition alloc] init];
 	

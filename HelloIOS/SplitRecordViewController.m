@@ -339,7 +339,16 @@
 
 - (void)recordStateChanged:(MultiRecordState)state lastState:(MultiRecordState)lastState {
 	NSLog(@"current record state is %ld, last is %ld", state, lastState);
+	
+	if (state == MultiRecordStateFinish) {
+		[self _showAlertViewWithMessage:@"录制完成"];
+	} else if (state == MultiRecordStateWillDeleteSplit) {
+		[self _showAlertViewWithMessage:@"确定要删除上一段视频吗?"];
+	}
 }
 
+- (void)progressUpdate:(CGFloat)current duration:(CGFloat)duration {
+	NSLog(@"current=%f, duration=%f", current, duration);
+}
 
 @end

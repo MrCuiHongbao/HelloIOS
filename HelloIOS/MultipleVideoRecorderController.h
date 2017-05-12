@@ -33,6 +33,8 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 - (void)recordStateChanged:(MultiRecordState)state lastState:(MultiRecordState)lastState;
 
+- (void)progressUpdate:(CGFloat)current duration:(CGFloat)duration;
+
 @end
 
 @interface MultipleVideoRecorderController : NSObject
@@ -64,10 +66,12 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 // 停止录制分段
 - (void)stopRecord;
 
-//- (BOOL)canDeleteSplitLast;
-
 // 删除分段
 // 返回值：0成功；-1失败；1确认删除
 - (int)deleteLastSplit;
+
+- (CGFloat)recordDuration;
+
+- (CGFloat)currentDuration;
 
 @end
