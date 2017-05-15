@@ -323,7 +323,7 @@
 		}
 		
 		// 获取输出规格
-		NSString *preset = AVCaptureSessionPresetHigh;
+		NSString *preset = AVCaptureSessionPresetMedium;
 		if (![videoDevice supportsAVCaptureSessionPreset:preset])
 		{
 			return;
@@ -374,7 +374,7 @@
 }
 
 - (void)toggleRecord {
-	if (self.recordState == MultiRecordStateReady || self.recordState == MultiRecordStateWillDeleteSplit) {
+	if (self.recordState == MultiRecordStateReady) {
 		[self startRecord];
 	} else if (self.recordState == MultiRecordStateRecording) {
 		[self stopRecord];
@@ -385,7 +385,7 @@
 
 // 开始录制分段
 - (BOOL)startRecord {
-	if (self.recordState != MultiRecordStateReady && self.recordState != MultiRecordStateWillDeleteSplit) {
+	if (self.recordState != MultiRecordStateReady) {
 		NSLog(@"recordState must be MultiRecordStateReady or MultiRecordStateWillDeleteSplit");
 		return NO;
 	}
@@ -400,7 +400,7 @@
 	_timer = [NSTimer scheduledTimerWithTimeInterval:_sourceVideoFrameTime target:self selector:@selector(onTimer) userInfo:nil repeats:YES];
 	[_timer fire];
 	
-	_progressUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer *timer){
+	_progressUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:1.0/60 repeats:YES block:^(NSTimer *timer){
 		if ([self.delegate respondsToSelector:@selector(progressUpdate:duration:)]) {
 			CGFloat current = self.sourceVideoSumTime - self.sourceVideoLeftTime;
 			CGFloat duration = self.sourceVideoSumTime;
@@ -434,6 +434,8 @@
 		vs.buffer = self.currentVideoBuffer;
 		vs.time = CMSampleBufferGetPresentationTimeStamp(self.currentVideoBuffer);
 		[self.videoSnapshots addObject:vs];
+		
+		NSLog(@"left time is %f", self.sourceVideoLeftTime);
 	}
 	
 	self.recordState = MultiRecordStateReady;
@@ -441,14 +443,7 @@
 
 - (int)deleteLastSplit {
 	int ret = 0;
-	if (self.recordState == MultiRecordStateReady) {
-		if ([_videoSplitManager canDelete]) {
-			self.recordState = MultiRecordStateWillDeleteSplit;
-			ret = 1;
-		} else {
-			ret = -1;
-		}
-	} else if (self.recordState == MultiRecordStateWillDeleteSplit) {
+	if (self.recordState == MultiRecordStateReady && [_videoSplitManager canDelete]) {
 		[_videoSplitManager popSplit];
 		if (![_videoSplitManager canDelete]) {
 			self.isFirstFrame = YES;
@@ -464,20 +459,16 @@
 			
 			CFRetain(vs.buffer);
 			self.currentVideoBuffer = vs.buffer;
-			
-//			CMTime start = CMSampleBufferGetPresentationTimeStamp(vs.buffer);
-//			CMTime end = _videoAsset.duration;
-//			NSValue *value = [NSValue valueWithCMTimeRange:CMTimeRangeMake(start, end)];
-//			[_assetVideoReaderOutput resetForReadingTimeRanges:@[value]];
 		}
+		
+		[self updateVideoLeftTime:vs.time];
+		NSLog(@"left time is %f", self.sourceVideoLeftTime);
 		
 		if (_reader) {
 			[_reader cancelReading];
 			_reader = nil;
 		}
 		[self setupAssetReading:self.sourceVideoPath atTime:vs.time];
-		
-		self.recordState = MultiRecordStateReady;
 	}
 	
 	return ret;
@@ -900,6 +891,12 @@
 	}
 }
 
+- (void)updateVideoLeftTime:(CMTime)presentTime {
+	CMTime durationTime = [_videoAsset duration];
+	CGFloat leftSeconds = CMTimeGetSeconds(CMTimeSubtract(durationTime, presentTime));
+	self.sourceVideoLeftTime = leftSeconds;
+}
+
 -(void)onTimer {
 	if ([_reader status] == AVAssetReaderStatusReading) {
 		dispatch_async(_writerQueue, ^(void) {
@@ -924,13 +921,7 @@
 					}
 				}
 				
-				// 计算源视频剩余时长
-				CMTime durationTime = [_videoAsset duration];
-				CMTime presentTime = CMSampleBufferGetPresentationTimeStamp(videoBuffer);
-				CGFloat leftSeconds = CMTimeGetSeconds(CMTimeSubtract(durationTime, presentTime));
-				if (self.sourceVideoSumTime - leftSeconds >= 1 || leftSeconds == 0) {
-					self.sourceVideoLeftTime = leftSeconds;
-				}
+				[self updateVideoLeftTime:CMSampleBufferGetPresentationTimeStamp(videoBuffer)];
 			}
 		});
 	} else {

@@ -342,8 +342,6 @@
 	
 	if (state == MultiRecordStateFinish) {
 		[self _showAlertViewWithMessage:@"录制完成"];
-	} else if (state == MultiRecordStateWillDeleteSplit) {
-		[self _showAlertViewWithMessage:@"确定要删除上一段视频吗?"];
 	}
 }
 
