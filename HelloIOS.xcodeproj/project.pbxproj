@@ -29,6 +29,8 @@
 		1EC2E6031CC2662600A5FC44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6021CC2662600A5FC44 /* Assets.xcassets */; };
 		1EC2E6061CC2662600A5FC44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1EC2E6041CC2662600A5FC44 /* LaunchScreen.storyboard */; };
 		3407599E1D58905600089DB2 /* TableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3407599D1D58905600089DB2 /* TableViewCell.m */; };
+		34351AD91EC5B98400E19B28 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34351AD81EC5B98400E19B28 /* TableViewController.m */; };
+		34351BD41EC9A69C00E19B28 /* FlipTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34351BD31EC9A69C00E19B28 /* FlipTestViewController.m */; };
 		34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */; };
 		34C510C01D5C754B00E4A0BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34C510BB1D5C754B00E4A0BC /* Main.storyboard */; };
 		34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */; };
@@ -78,6 +80,10 @@
 		1EC2E6071CC2662600A5FC44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3407599C1D58905600089DB2 /* TableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewCell.h; sourceTree = "<group>"; };
 		3407599D1D58905600089DB2 /* TableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewCell.m; sourceTree = "<group>"; };
+		34351AD71EC5B98400E19B28 /* TableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewController.h; sourceTree = "<group>"; };
+		34351AD81EC5B98400E19B28 /* TableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewController.m; sourceTree = "<group>"; };
+		34351BD21EC9A69C00E19B28 /* FlipTestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlipTestViewController.h; sourceTree = "<group>"; };
+		34351BD31EC9A69C00E19B28 /* FlipTestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlipTestViewController.m; sourceTree = "<group>"; };
 		34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleTableViewController.h; sourceTree = "<group>"; };
 		34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimpleTableViewController.m; sourceTree = "<group>"; };
 		34C510BB1D5C754B00E4A0BC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
@@ -168,19 +174,23 @@
 			isa = PBXGroup;
 			children = (
 				1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */,
+				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
 				34C510BC1D5C754B00E4A0BC /* BiggerTableViewCell.h */,
 				34C510BE1D5C754B00E4A0BC /* BiggerTableViewController.h */,
 				1EA426301D5499AD008B96A7 /* EntryCell.h */,
 				34B6F0AB1DD968EB00E46C20 /* SimpleTableViewController.h */,
 				3407599C1D58905600089DB2 /* TableViewCell.h */,
 				1EC2E5F91CC2662600A5FC44 /* ViewController.h */,
-				1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */,
 				34C510BD1D5C754B00E4A0BC /* BiggerTableViewCell.m */,
 				34C510BF1D5C754B00E4A0BC /* BiggerTableViewController.m */,
+				34351AD71EC5B98400E19B28 /* TableViewController.h */,
+				34351AD81EC5B98400E19B28 /* TableViewController.m */,
 				1EA426311D5499AD008B96A7 /* EntryCell.m */,
 				34B6F0AC1DD968EB00E46C20 /* SimpleTableViewController.m */,
 				3407599D1D58905600089DB2 /* TableViewCell.m */,
 				1EC2E5FA1CC2662600A5FC44 /* ViewController.m */,
+				34351BD21EC9A69C00E19B28 /* FlipTestViewController.h */,
+				34351BD31EC9A69C00E19B28 /* FlipTestViewController.m */,
 				1EC2E6071CC2662600A5FC44 /* Info.plist */,
 				34C510BB1D5C754B00E4A0BC /* Main.storyboard */,
 				1EC2E6021CC2662600A5FC44 /* Assets.xcassets */,
@@ -233,7 +243,7 @@
 				TargetAttributes = {
 					1EC2E5EF1CC2662600A5FC44 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = WR3U379XHN;
+						DevelopmentTeam = R9V8UVQ5QF;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -275,6 +285,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34351AD91EC5B98400E19B28 /* TableViewController.m in Sources */,
 				1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */,
 				1E27C86F1EB577CB00405D68 /* RecordController.m in Sources */,
 				1E2A2D1F1E4DB3BE008998A9 /* AVPlayerViewController.m in Sources */,
@@ -295,6 +306,7 @@
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
 				1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */,
 				1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */,
+				34351BD41EC9A69C00E19B28 /* FlipTestViewController.m in Sources */,
 				1EC2E5F51CC2662600A5FC44 /* main.m in Sources */,
 				1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */,
 			);
@@ -406,10 +418,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = WR3U379XHN;
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.test;
+				PRODUCT_BUNDLE_IDENTIFIER = com.test.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -422,10 +434,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = WR3U379XHN;
+				DEVELOPMENT_TEAM = R9V8UVQ5QF;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.test;
+				PRODUCT_BUNDLE_IDENTIFIER = com.test.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

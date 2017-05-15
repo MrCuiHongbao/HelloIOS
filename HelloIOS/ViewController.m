@@ -11,6 +11,8 @@
 #import "EntryCell.h"
 #import "UITableView1.h"
 
+#import "FlipTestViewController.h"
+
 @interface ViewController () <UIGestureRecognizerDelegate, UITableViewDelegate, UITableViewDataSource>
 
 //@property (nonatomic, strong) UIButton *btnView;
@@ -60,7 +62,8 @@
 				   @"RecordController",
 				   @"VideoCompositionController",
 				   @"UISegmentProgressBarViewController",
-				   @"SplitRecordViewController"];
+				   @"SplitRecordViewController",
+				   @"FlipTestViewController"];
 }
 
 - (void)clickBtn:(id)sender
@@ -134,6 +137,13 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
 	[tableView deselectRowAtIndexPath:indexPath animated:NO];
+	
+	if (indexPath.row == 8) {
+		FlipTestViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"filpTestVC"];
+		[self showViewController:vc sender:nil];
+		return;
+	}
+	
 	NSString *entryName = [_entryList objectAtIndex:indexPath.row];
 	id object = [[NSClassFromString(entryName) alloc] init];
 	if (object)
