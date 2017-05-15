@@ -15,12 +15,11 @@
 typedef NS_ENUM(NSInteger, MultiRecordState) {
 	MultiRecordStateUnknown = 0,
 	MultiRecordStateInit,				// 初始化摄像头等
-	MultiRecordStateReady,				// 初始化完成，可以开始录制
+	MultiRecordStateReady,				// 可以开始录制
 	MultiRecordStatePrepareRecording,	// 准备录制的相关组件
 	MultiRecordStateRecording,			// 录制中
-	MultiRecordStateWillDeleteSplit,	// 删除分段确认阶段
 	MultiRecordStateFinish,				// 录制完成
-	MultiRecordStateFail,
+	MultiRecordStateFail,				// 录制失败
 };
 
 @interface GLKViewWithBounds : GLKView
@@ -67,7 +66,7 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 - (void)stopRecord;
 
 // 删除分段
-// 返回值：0成功；-1失败；1确认删除
+// 返回值：0成功；-1失败
 - (int)deleteLastSplit;
 
 - (CGFloat)recordDuration;
