@@ -346,7 +346,7 @@
 }
 
 - (void)progressUpdate:(CGFloat)current duration:(CGFloat)duration {
-	NSLog(@"current=%f, duration=%f", current, duration);
+	// NSLog(@"current=%f, duration=%f", current, duration);
 }
 
 @end
