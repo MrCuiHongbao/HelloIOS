@@ -16,6 +16,8 @@
 
 @property (nonatomic, retain) UIButton *closeBtn;
 
+@property (nonatomic, retain) UIButton *switchBtn;
+
 @property (nonatomic, retain) UIButton *recordBtn;
 
 @property (nonatomic, retain) UIButton *deleteBtn;
@@ -72,6 +74,18 @@
 	}
 	
 	return _closeBtn;
+}
+
+- (UIButton *)switchBtn {
+	if (!_switchBtn) {
+		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+		[btn setFrame:CGRectMake(self.sw - 60, 0, 60, 40)];
+		[btn setTitle:@"切换" forState:UIControlStateNormal];
+		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
+		_switchBtn = btn;
+	}
+	
+	return _switchBtn;
 }
 
 - (UIButton *)recordBtn {
@@ -160,6 +174,8 @@
 		[_recorderController toggleRecord];
 	} else if (sender == self.deleteBtn) {
 		[_recorderController deleteLastSplit];
+	} else if (sender == self.switchBtn) {
+		[_recorderController switchCamera];
 	}
 }
 
@@ -175,6 +191,7 @@
 
 - (void)setupControlPanel {
 	[self.view addSubview:self.closeBtn];
+	[self.view addSubview:self.switchBtn];
 	[self.view addSubview:self.deleteBtn];
 	[self.view addSubview:self.recordBtn];
 	[self.view addSubview:self.pickerBtn];
@@ -341,7 +358,16 @@
 	NSLog(@"current record state is %ld, last is %ld", state, lastState);
 	
 	if (state == MultiRecordStateFinish) {
-		[self _showAlertViewWithMessage:@"录制完成"];
+		[_recorderController exportVideo:^(NSString *exportFile) {
+			NSLog(@"export file is %@", exportFile);
+			if (exportFile) {
+				[self _showAlertViewWithMessage:@"视频已生成"];
+			} else {
+				[self _showAlertViewWithMessage:@"视频导出错误"];
+			}
+		}];
+	} else if (state == MultiRecordStateReady) {
+		
 	}
 }
 
