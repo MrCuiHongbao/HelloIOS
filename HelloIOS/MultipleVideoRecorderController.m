@@ -202,6 +202,9 @@
 
 @property (nonatomic, strong) VideoSplitManager *videoSplitManager;
 
+@property (nonatomic) CGFloat cost;
+@property (nonatomic) CGFloat count;
+
 @end
 
 @implementation MultipleVideoRecorderController
@@ -272,9 +275,7 @@
 		[self.captureSession stopRunning];
 	}
 	
-	if (self.readerTimer) {
-		
-	}
+	[self stopVideoExtrace];
 }
 
 - (GLKViewWithBounds *)setupRenderWidth:(CGRect)frame {
@@ -470,6 +471,8 @@
 	
 	[self setupAudioPlayer:sourceVideo atTime:kCMTimeZero];
 	
+	[self setupVideoExtracrTimer];
+	
 	self.recordState = MultiRecordStateReady;
 }
 
@@ -530,7 +533,8 @@
 	
 	@synchronized (self) {
 		// 暂停视频帧处理
-		[self pauseVideoExtrace];
+		[self stopVideoExtrace];
+		[self setupVideoExtracrTimer];
 		
 		// 释放进度回调定时器
 		[_progressUpdateTimer invalidate];
@@ -703,6 +707,8 @@
 }
 
 - (void)renderByGL1:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+	NSDate *start = [NSDate date];
+	
 	CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
 	
 	CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
@@ -713,10 +719,21 @@
 		if (self.currentVideoBuffer) {
 			CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
 			sourceVideoFrame = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
+			//presentationTime = CMSampleBufferGetPresentationTimeStamp(self.currentVideoBuffer);
 		}
 	}
 	
-	CIImage *destImage = [self renderFrameLeft:captureFrame right:sourceVideoFrame overlayColor:NO];
+	CIImage *destImage = [self renderFrameLeft2:captureFrame right:sourceVideoFrame overlayColor:NO];
+	
+	if (self.recordState == MultiRecordStateRecording) {
+		NSDate *end = [NSDate date];
+		NSTimeInterval cost = [end timeIntervalSinceDate:start];
+		//NSLog(@"record video cost %f", cost);
+		start = end;
+		
+		self.cost += cost;
+		self.count++;
+	}
 	
 	[self.feedView bindDrawable];
 	
@@ -739,10 +756,22 @@
 	
 	[_feedView display];
 	
+	if (self.recordState == MultiRecordStateRecording) {
+		NSDate *end = [NSDate date];
+		//NSLog(@"record video cost1 %f", [end timeIntervalSinceDate:start]);
+		start = end;
+	}
+	
 	if (sourceVideoFrame) {
 		dispatch_async(_writerQueue, ^(){
 			[self outputVideoFrame:destImage withPresentationTime:presentationTime];
 		});
+	}
+	
+	if (self.recordState == MultiRecordStateRecording) {
+		NSDate *end = [NSDate date];
+		//NSLog(@"record video cost2 %f", [end timeIntervalSinceDate:start]);
+		start = end;
 	}
 }
 
@@ -872,19 +901,28 @@
 	
 	if (image2) {
 		/*
+		CGRect drawRect = CGRectMake(0, 0, size.width, size.height / 2);
 		CGRect image2Rect = image2.extent;
-		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
-		if (image2Asptect < destAsptect) {
-			image2Rect.origin.y = (CGRectGetHeight(image2Rect) - CGRectGetWidth(image2Rect) / destAsptect) / 2;
-			image2Rect.size.height = CGRectGetWidth(image2Rect) / destAsptect;
+		CGFloat scale;
+		if (_videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0) {
+			CGFloat image2Asptect = CGRectGetHeight(image2Rect) / CGRectGetWidth(image2Rect);
+			if (image2Asptect < destAsptect) {
+				scale = CGRectGetHeight(image2Rect) / CGRectGetHeight(drawRect);
+			} else {
+				scale = CGRectGetWidth(image2Rect) / CGRectGetWidth(drawRect);
+			}
+			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:scale orientation:UIImageOrientationLeft];
 		} else {
-			image2Rect.origin.x = (CGRectGetWidth(image2Rect) - CGRectGetHeight(image2Rect) * destAsptect) / 2;
-			image2Rect.size.width = CGRectGetHeight(image2Rect) * destAsptect;
+			CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
+			if (image2Asptect < destAsptect) {
+				scale = CGRectGetHeight(image2Rect) / CGRectGetHeight(drawRect);
+			} else {
+				scale = CGRectGetWidth(image2Rect) / CGRectGetWidth(drawRect);
+			}
+			// tmp2 = [[UIImage alloc] initWithCIImage:image2];
+			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:scale orientation:UIImageOrientationUp];
 		}
-		CIImage *destImage2 = [image2 imageByCroppingToRect:image2Rect];
-		tmp2 = [[UIImage alloc] initWithCIImage:destImage2];
 		 */
-		
 		if (_videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0) {
 			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:1.0 orientation:UIImageOrientationLeft];
 		} else {
@@ -909,7 +947,6 @@
 		
 		[tmp2 drawInRect:drawRect];
 		
-		
 		if (overlay) {
 			CGContextRef context = UIGraphicsGetCurrentContext();
 			[[UIColor colorWithWhite:0 alpha:0.8] setFill];
@@ -919,7 +956,102 @@
 	}
 	
 	if (tmp1) {
-		[tmp1 drawInRect:CGRectMake(0, size.height / 2, size.width, size.height / 2)];
+		CGRect drawRect = CGRectMake(0, size.height / 2, size.width, size.height / 2);
+		[tmp1 drawInRect:drawRect];
+	}
+	
+	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	return [[CIImage alloc] initWithImage:result];
+}
+
+- (CIImage *)renderFrameLeft2:(CIImage *)image1 right:(CIImage *)image2 overlayColor:(BOOL)overlay {
+	// 绘制屏幕尺寸的宽高比
+	CGSize size = self.feedView.viewBounds.size;
+	CGFloat destAsptect = size.width / (size.height / 2);
+	
+	UIGraphicsBeginImageContext(size);
+	[[UIColor colorWithWhite:0 alpha:1] setFill];
+	
+	CIContext *ciContext = [CIContext contextWithOptions:nil];
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	
+	// Flip the context because UIKit coordinate system is upside down to Quartz coordinate system
+	CGContextTranslateCTM(context, 0.0, size.height);
+	CGContextScaleCTM(context, 1.0, -1.0);
+	
+	if (image1) {
+		CGRect drawRect = CGRectMake(0, 0, size.width, size.height / 2);
+		CGRect image1Rect = image1.extent;
+		CGFloat image1Asptect = CGRectGetWidth(image1Rect) / CGRectGetHeight(image1Rect);
+		if (image1Asptect < destAsptect) {
+			image1Rect.origin.y = (CGRectGetHeight(image1Rect) - CGRectGetWidth(image1Rect) / destAsptect) / 2;
+			image1Rect.size.height = CGRectGetWidth(image1Rect) / destAsptect;
+		} else {
+			image1Rect.origin.x = (CGRectGetWidth(image1Rect) - CGRectGetHeight(image1Rect) * destAsptect) / 2;
+			image1Rect.size.width = CGRectGetHeight(image1Rect) * destAsptect;
+		}
+		CGImageRef cgimg = [ciContext createCGImage:image1 fromRect:image1Rect];
+		
+		CGContextDrawImage(context, drawRect, cgimg);
+		CGImageRelease(cgimg);
+	}
+	
+	if (image2) {
+		// 图片没有旋转
+		BOOL noRotate = _videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0;
+		
+		CGRect drawRect = CGRectMake(0, size.height / 2, size.width, size.height / 2);
+		CGRect image2Rect = image2.extent;
+		if (noRotate) {
+			CGContextSaveGState(context);
+			CGContextTranslateCTM(context, size.width / 2, size.height / 2);
+			CGContextRotateCTM(context, M_PI_2);
+			CGContextTranslateCTM(context, -size.height / 2, -size.width / 2);
+			
+			image2Rect = CGRectMake(0, 0, CGRectGetHeight(image2Rect), CGRectGetWidth(image2Rect));
+		}
+		
+		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
+		if (image2Asptect < destAsptect) {
+			drawRect.origin.x = (CGRectGetWidth(drawRect) - CGRectGetHeight(drawRect) * image2Asptect) / 2;
+			drawRect.size.width = CGRectGetHeight(drawRect) * image2Asptect;
+		} else {
+			drawRect.origin.y = (CGRectGetHeight(drawRect) - CGRectGetWidth(drawRect) / image2Asptect) / 2;
+			drawRect.size.height = CGRectGetWidth(drawRect) / image2Asptect;
+		}
+		
+		if (noRotate) {
+			drawRect = CGRectMake(CGRectGetMinY(drawRect), CGRectGetMinX(drawRect), CGRectGetHeight(drawRect), CGRectGetWidth(drawRect));
+		}
+		
+		CIImage *finalImage;
+		CGFloat scale = CGRectGetWidth(drawRect) / CGRectGetWidth(image2.extent);
+		if (scale < 1) {
+			CIFilter *resizeFilter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
+			[resizeFilter setValue:image2 forKey:@"inputImage"];
+			[resizeFilter setValue:[NSNumber numberWithFloat:1.0f] forKey:@"inputAspectRatio"];
+			[resizeFilter setValue:[NSNumber numberWithFloat:scale] forKey:@"inputScale"];
+			finalImage = resizeFilter.outputImage;
+		} else {
+			finalImage = image2;
+		}
+		
+		CGImageRef cgimg = [ciContext createCGImage:finalImage fromRect:finalImage.extent];
+		CGContextDrawImage(context, drawRect, cgimg);
+		CGImageRelease(cgimg);
+		
+		if (overlay) {
+			CGContextRef context = UIGraphicsGetCurrentContext();
+			[[UIColor colorWithWhite:0 alpha:0.8] setFill];
+			CGContextAddRect(context, CGRectMake(0, 0, size.width, size.height / 2));
+			CGContextDrawPath(context,kCGPathFill);
+		}
+		
+		if (noRotate) {
+			CGContextRestoreGState(context);
+		}
 	}
 	
 	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
@@ -998,25 +1130,32 @@
 	}
 }
 
-- (void)startVideoExtrace {
+- (void)setupVideoExtracrTimer {
 	if (!_readerTimer) {
 		NSTimeInterval period = _sourceVideoFrameTime;
 		//dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 		dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _readerQueue);
 		dispatch_source_set_timer(timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0);
-		_readerTimer = timer;
+		self.readerTimer = timer;
 		
 		__weak typeof(self) weakSelf = self;
 		dispatch_source_set_event_handler(timer, ^{
 			[weakSelf handleVideoFrame];
 		});
 	}
-	
-	dispatch_resume(_readerTimer);
 }
 
-- (void)pauseVideoExtrace {
-	dispatch_suspend(_readerTimer);
+- (void)startVideoExtrace {
+	if (_readerTimer) {
+		dispatch_resume(_readerTimer);
+	}
+}
+
+- (void)stopVideoExtrace {
+	if (self.readerTimer) {
+		dispatch_source_cancel(self.readerTimer);
+		self.readerTimer = nil;
+	}
 }
 
 - (void)handleVideoFrame {
@@ -1062,6 +1201,8 @@
 		}
 	} else {
 		[self stopRecord:MultiRecordStateFinish];
+		
+		NSLog(@"record cost %f", self.cost / self.count);
 	}
 	
 	NSTimeInterval cost = [[NSDate date] timeIntervalSinceDate:start];
