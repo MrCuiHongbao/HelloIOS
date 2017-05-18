@@ -45,6 +45,9 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 // 安装摄像头设备
 - (void)setupCapture;
 
+// 卸载摄像头
+- (void)uninstallCapture;
+
 // 切换摄像头
 - (void)switchCamera;
 
@@ -55,12 +58,6 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 // 录制操作
 - (void)toggleRecord;
-
-// 开始录制分段
-- (BOOL)startRecord;
-
-// 停止录制分段
-- (void)stopRecord;
 
 // 删除分段
 // 返回值：0成功；-1失败
