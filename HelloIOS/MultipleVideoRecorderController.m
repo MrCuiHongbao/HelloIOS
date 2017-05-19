@@ -970,19 +970,23 @@
 	// 绘制屏幕尺寸的宽高比
 	CGSize size = self.feedView.viewBounds.size;
 	CGFloat destAsptect = size.width / (size.height / 2);
+	int viewWidth = (int)size.width;
+	int viewHeight = (int)size.height;
+	int splitHeight = viewHeight >> 1;
 	
 	UIGraphicsBeginImageContext(size);
 	[[UIColor colorWithWhite:0 alpha:1] setFill];
 	
-	CIContext *ciContext = [CIContext contextWithOptions:nil];
+	// CIContext *ciContext = [CIContext contextWithOptions:nil];
+	CIContext *ciContext = _ciContext;
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	
 	// Flip the context because UIKit coordinate system is upside down to Quartz coordinate system
-	CGContextTranslateCTM(context, 0.0, size.height);
+	CGContextTranslateCTM(context, 0.0, viewHeight);
 	CGContextScaleCTM(context, 1.0, -1.0);
 	
 	if (image1) {
-		CGRect drawRect = CGRectMake(0, 0, size.width, size.height / 2);
+		CGRect drawRect = CGRectMake(0, 0, viewWidth, splitHeight);
 		CGRect image1Rect = image1.extent;
 		CGFloat image1Asptect = CGRectGetWidth(image1Rect) / CGRectGetHeight(image1Rect);
 		if (image1Asptect < destAsptect) {
@@ -1002,13 +1006,14 @@
 		// 图片没有旋转
 		BOOL noRotate = _videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0;
 		
-		CGRect drawRect = CGRectMake(0, size.height / 2, size.width, size.height / 2);
+
+		CGRect drawRect = CGRectMake(0, splitHeight, viewWidth, splitHeight);
 		CGRect image2Rect = image2.extent;
 		if (noRotate) {
 			CGContextSaveGState(context);
-			CGContextTranslateCTM(context, size.width / 2, size.height / 2);
+			CGContextTranslateCTM(context, viewWidth >> 1, viewHeight >> 1);
 			CGContextRotateCTM(context, M_PI_2);
-			CGContextTranslateCTM(context, -size.height / 2, -size.width / 2);
+			CGContextTranslateCTM(context, -(viewHeight >> 1), -(viewWidth >> 1));
 			
 			image2Rect = CGRectMake(0, 0, CGRectGetHeight(image2Rect), CGRectGetWidth(image2Rect));
 		}
