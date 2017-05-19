@@ -1001,11 +1001,49 @@
 		CGImageRelease(cgimg);
 	}
 	
+	// fill
 	if (image2) {
+		BOOL noRotate = _videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0;
+		
+		CGRect drawRect = CGRectMake(0, splitHeight, viewWidth, splitHeight);
+		CGRect image2Rect = image2.extent;
+		if (noRotate) {
+			CGContextSaveGState(context);
+			CGContextTranslateCTM(context, viewWidth >> 1, viewHeight >> 1);
+			CGContextRotateCTM(context, M_PI_2);
+			CGContextTranslateCTM(context, -(viewHeight >> 1), -(viewWidth >> 1));
+			
+			image2Rect = CGRectMake(0, 0, CGRectGetHeight(image2Rect), CGRectGetWidth(image2Rect));
+		}
+		
+		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
+		if (image2Asptect < destAsptect) {
+			image2Rect.origin.y = (CGRectGetHeight(image2Rect) - CGRectGetWidth(image2Rect) / destAsptect) / 2;
+			image2Rect.size.height = CGRectGetWidth(image2Rect) / destAsptect;
+		} else {
+			image2Rect.origin.x = (CGRectGetWidth(image2Rect) - CGRectGetHeight(image2Rect) * destAsptect) / 2;
+			image2Rect.size.width = CGRectGetHeight(image2Rect) * destAsptect;
+		}
+		
+		if (noRotate) {
+			image2Rect = CGRectMake(CGRectGetMinY(image2Rect), CGRectGetMinX(image2Rect), CGRectGetHeight(image2Rect), CGRectGetWidth(image2Rect));
+			drawRect = CGRectMake(CGRectGetMinY(drawRect), CGRectGetMinX(drawRect), CGRectGetHeight(drawRect), CGRectGetWidth(drawRect));
+		}
+		
+		CGImageRef cgimg = [ciContext createCGImage:image2 fromRect:image2Rect];
+		CGContextDrawImage(context, drawRect, cgimg);
+		CGImageRelease(cgimg);
+		
+		if (noRotate) {
+			CGContextRestoreGState(context);
+		}
+	}
+	
+	// fit
+	if (image2 && false) {
 		// 图片没有旋转
 		BOOL noRotate = _videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0;
 		
-
 		CGRect drawRect = CGRectMake(0, splitHeight, viewWidth, splitHeight);
 		CGRect image2Rect = image2.extent;
 		if (noRotate) {
@@ -1199,11 +1237,10 @@
 		}
 	} else {
 		[self stopRecord:MultiRecordStateFinish];
-		
+	
+		NSLog(@"video duration %f", [self.costDate timeIntervalSinceNow]);
 		NSLog(@"record cost %f", self.cost / self.count);
 	}
-	
-	NSLog(@"video frame %f", [self.costDate timeIntervalSinceNow]);
 }
 
 - (void)setupAudioPlayer:(NSString *)videoFile atTime:(CMTime)atTime {
