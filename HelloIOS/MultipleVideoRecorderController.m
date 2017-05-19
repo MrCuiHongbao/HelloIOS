@@ -168,7 +168,6 @@
 @property (nonatomic, strong) AVAssetWriterInput *writerInput;
 @property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor *writerInputPixelBufferAdaptor;
 @property (nonatomic, assign) BOOL canWrite;
-@property (nonatomic, assign) int writeFlag;
 
 // 读视频
 @property (nonatomic, strong) AVAssetReaderTrackOutput *assetVideoReaderOutput;
@@ -204,6 +203,8 @@
 
 @property (nonatomic) CGFloat cost;
 @property (nonatomic) CGFloat count;
+
+@property (nonatomic, strong) NSDate *costDate;
 
 @end
 
@@ -787,8 +788,6 @@
 				
 				[self appendSampleBuffer:AVMediaTypeVideo CVPixelBufferRef:renderBuffer withPresentationTime:presentationTime];
 				CFRelease(renderBuffer);
-				
-				self.writeFlag --;
 			}
 		}
 	}
@@ -1113,13 +1112,9 @@
 		_videoTransform = videoTrack.preferredTransform;
 		
 		CMTime duration = [asset duration];
-		CMTime minDuration = [videoTrack minFrameDuration];
-		CGFloat sumTime = duration.value / duration.timescale;
-		CGFloat sumFrame = sumTime * videoTrack.nominalFrameRate;
 		CGFloat totalTime = CMTimeGetSeconds(duration);
-		CGFloat frameTime = totalTime / sumFrame;
-		_sourceVideoFrameTime = frameTime;
-		_sourceVideoSumTime = sumTime;
+		_sourceVideoFrameTime = 1 / videoTrack.nominalFrameRate;
+		_sourceVideoSumTime = totalTime;
 		[self updateVideoLeftTime:atTime];
 		
 		_reader.timeRange = CMTimeRangeMake(atTime, kCMTimePositiveInfinity);
@@ -1164,8 +1159,6 @@
 }
 
 - (void)handleVideoFrame {
-	NSDate *start = [NSDate date];
-	
 	if ([_reader status] == AVAssetReaderStatusReading) {
 		@synchronized (self) {
 			if (self.recordState != MultiRecordStateRecording) {
@@ -1176,6 +1169,7 @@
 			if (!self.isAudioPlaying) {
 				[_audioPlayer play];
 				self.isAudioPlaying = YES;
+				self.costDate = [NSDate date];
 			}
 			
 			CMSampleBufferRef videoBuffer = [_assetVideoReaderOutput copyNextSampleBuffer];
@@ -1188,7 +1182,6 @@
 					}
 					
 					self.currentVideoBuffer = videoBuffer;
-					self.writeFlag ++;
 					
 					// 记录第一帧到分段快照
 					if (self.isFirstFrame) {
@@ -1210,9 +1203,7 @@
 		NSLog(@"record cost %f", self.cost / self.count);
 	}
 	
-	NSTimeInterval cost = [[NSDate date] timeIntervalSinceDate:start];
-	if (cost > _sourceVideoFrameTime)
-		NSLog(@"reader video cost %f", cost);
+	NSLog(@"video frame %f", [self.costDate timeIntervalSinceNow]);
 }
 
 - (void)setupAudioPlayer:(NSString *)videoFile atTime:(CMTime)atTime {
@@ -1278,8 +1269,6 @@
 		return;
 	}
 	
-	NSLog(@"write flag %d", self.writeFlag);
-	
 	NSArray<NSString *> * videoFiles = [_videoSplitManager getAllSplits];
 	NSString *audioFromVideoFile = self.sourceVideoPath;
 	
@@ -1290,6 +1279,17 @@
 	AVMutableCompositionTrack *videoTrack = [mc addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
 	AVMutableCompositionTrack *audioTrack = [mc addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
 	
+	// 插入音频轨
+	NSURL *audioURL = [NSURL fileURLWithPath:audioFromVideoFile];
+	AVURLAsset* asset2 = [AVURLAsset URLAssetWithURL:audioURL options:nil];
+	if ([asset2 tracksWithMediaType:AVMediaTypeAudio].count == 0) {
+		NSLog(@"NO audio track...");
+		return;
+	}
+	AVAssetTrack *audioAsset = [[asset2 tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+	[audioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset2.duration) ofTrack:audioAsset atTime:kCMTimeZero error:nil];
+	
+	// 插入视频轨
 	for (long i=videoFiles.count - 1; i>=0; i--) {
 		NSString *videoPath = videoFiles[i];
 		NSURL *videoFile = [NSURL fileURLWithPath:videoPath];
@@ -1302,17 +1302,17 @@
 		[videoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset1.duration) ofTrack:videoAsset atTime:kCMTimeZero error:nil];
 	}
 	
-	NSURL *audioURL = [NSURL fileURLWithPath:audioFromVideoFile];
-	AVURLAsset* asset2 = [AVURLAsset URLAssetWithURL:audioURL options:nil];
-	if ([asset2 tracksWithMediaType:AVMediaTypeAudio].count == 0) {
-		NSLog(@"NO audio track...");
-		return;
+	// 对齐视频和音频轨道的长度
+	CMTime audioTimeRange = audioTrack.timeRange.duration;
+	CMTime videoTimeRange = videoTrack.timeRange.duration;
+	int32_t ret = CMTimeCompare(audioTimeRange, videoTimeRange);
+	if (ret < 0) {
+		CMTimeRange remove = CMTimeRangeFromTimeToTime(audioTimeRange, videoTimeRange);
+		[videoTrack removeTimeRange:remove];
+	} else if (ret > 0) {
+		CMTimeRange remove = CMTimeRangeFromTimeToTime(videoTimeRange, audioTimeRange);
+		[audioTrack removeTimeRange:remove];
 	}
-	AVAssetTrack *audioAsset = [[asset2 tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-	
-	CMTime atTime = kCMTimeZero;
-	//atTime = CMTimeMakeWithSeconds(3, asset2.duration.timescale);
-	[audioTrack insertTimeRange:CMTimeRangeMake(atTime, asset2.duration) ofTrack:audioAsset atTime:atTime error:nil];
 	
 	// 90度旋转
 	CGAffineTransform translateToCenter = CGAffineTransformMakeTranslation(videoTrack.naturalSize.height, 0.0);
