@@ -42,6 +42,11 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 - (instancetype)init;
 
+- (instancetype)initWithSingle:(BOOL)isSingle;
+
+// 是否是单屏录制
+- (void)singleRecord:(BOOL)isSingle;
+
 // 安装摄像头设备
 - (void)setupCapture;
 

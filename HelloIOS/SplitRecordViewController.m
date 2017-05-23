@@ -52,13 +52,15 @@
 
 @property (nonatomic, retain) MultipleVideoRecorderController *recorderController;
 
+@property (nonatomic) BOOL isSingle;
+
 @end
 
 @implementation SplitRecordViewController
 
 - (instancetype)init {
 	if (self = [super init]) {
-		
+		_isSingle = YES;
 	}
 	
 	return self;
@@ -205,7 +207,7 @@
 	self.sw = [[UIScreen mainScreen] bounds].size.width;
 	self.sh = [[UIScreen mainScreen] bounds].size.height;
 	
-	_recorderController = [[MultipleVideoRecorderController alloc] init];
+	_recorderController = [[MultipleVideoRecorderController alloc] initWithSingle:_isSingle];
 	_recorderController.delegate = self;
 }
 
@@ -222,10 +224,15 @@
 - (void)setupPreview {
 	//[self.view addSubview:self.previewView];
 	
-	_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 100, self.sw, self.sw * 1.25)];
-	[self.view addSubview:self.feedView];
-	
-	[self.view addSubview:self.lineView];
+	if (!self.isSingle) {
+		_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 100, self.sw, self.sw * 1.25)];
+		[self.view addSubview:self.feedView];
+		
+		[self.view addSubview:self.lineView];
+	} else {
+		_feedView = [_recorderController setupRenderWidth:CGRectMake(0, 0, self.sw, self.sh)];
+		[self.view addSubview:self.feedView];
+	}
 }
 
 - (void)dealloc {
@@ -236,8 +243,6 @@
 	[super loadView];
 	
 	[self initData];
-	
-	[self setupControlPanel];
 }
 
 
@@ -249,6 +254,8 @@
 		
 		[self setupPreview];
 	}
+	
+	[self setupControlPanel];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

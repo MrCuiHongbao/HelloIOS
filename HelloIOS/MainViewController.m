@@ -13,6 +13,7 @@
 @property (nonatomic, strong) UIButton *showAlertBtn1;
 @property (nonatomic, strong) UIButton *showAlertBtn2;
 @property (nonatomic, strong) UIButton *showAlertBtn3;
+@property (nonatomic, strong) UITextView *linkView;
 
 @end
 
@@ -46,6 +47,13 @@
 	[_showAlertBtn3 addTarget:self action:@selector(clickBtn:) forControlEvents:UIControlEventTouchUpInside];
 	[_showAlertBtn3 setTitle:@"showAlert3" forState:UIControlStateNormal];
 	[container addSubview:_showAlertBtn3];
+	
+	_linkView = [[UITextView alloc] initWithFrame:CGRectMake(100, 350, size.width, 50)];
+	[container addSubview:_linkView];
+	
+	NSMutableAttributedString * str = [[NSMutableAttributedString alloc] initWithString:@"Google"];
+	[str addAttribute: NSLinkAttributeName value: @"http://www.google.com" range: NSMakeRange(0, str.length)];
+	_linkView.attributedText = str;
 }
 
 - (void)viewDidLoad
