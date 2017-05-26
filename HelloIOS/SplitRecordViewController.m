@@ -60,7 +60,8 @@
 
 - (instancetype)init {
 	if (self = [super init]) {
-		_isSingle = YES;
+		// _isSingle = YES;
+		_isSingle = NO;
 	}
 	
 	return self;
@@ -218,7 +219,7 @@
 	[self.view addSubview:self.deleteBtn];
 	[self.view addSubview:self.recordBtn];
 	[self.view addSubview:self.pickerBtn];
-	[self.view addSubview:self.durationView];
+	// [self.view addSubview:self.durationView];
 }
 
 - (void)setupPreview {

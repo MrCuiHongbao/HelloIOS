@@ -334,12 +334,12 @@
 	
 	feedView.viewBounds = CGRectMake(0.0, 0.0, feedView.drawableWidth, feedView.drawableHeight);
 	
-	//	dispatch_async(dispatch_get_main_queue(), ^(void) {
-	//		CGAffineTransform transform = CGAffineTransformMakeRotation(M_PI_2);
-	//
-	//		feedView.transform = transform;
-	//		feedView.frame = frame;
-	//	});
+//	dispatch_async(dispatch_get_main_queue(), ^(void) {
+//		CGAffineTransform transform = CGAffineTransformMakeRotation(M_PI_2);
+//		
+//		feedView.transform = transform;
+//		feedView.frame = frame;
+//	});
 	
 	return feedView;
 }
@@ -372,22 +372,21 @@
 	}
 	
 	dispatch_async(_captureSessionQueue, ^(void) {
-		// 获取视频设备
-		AVCaptureDevice *videoDevice = [self cameraWithPosition:self.cameraPosition];
-		
-		// 获取输出规格
-		NSString *preset = AVCaptureSessionPresetMedium;
-		if (![videoDevice supportsAVCaptureSessionPreset:preset]) {
-			return;
-		}
-		
 		// 初始化摄像头会话
 		_captureSession = [[AVCaptureSession alloc] init];
-		_captureSession.sessionPreset = preset;
+		
+		// 获取输出规格
+		NSString *preset = AVCaptureSessionPreset640x480;
+		if (![self isSplitRecorder]) {
+			preset = AVCaptureSessionPreset1280x720;
+		}
+		if ([_captureSession canSetSessionPreset:preset]) {
+			_captureSession.sessionPreset = preset;
+		}
 		
 		[_captureSession beginConfiguration];
 		
-		[self addVideoDevice:videoDevice];
+		[self addVideoDevice];
 		
 		[self addAudioDevice];
 		
@@ -399,7 +398,10 @@
 	});
 }
 
-- (void)addVideoDevice:(AVCaptureDevice *)videoDevice {
+- (void)addVideoDevice {
+	// 获取视频设备
+	AVCaptureDevice *videoDevice = [self cameraWithPosition:self.cameraPosition];
+	
 	// 获取设备输入组件
 	NSError *error = nil;
 	AVCaptureDeviceInput *videoDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
@@ -715,7 +717,7 @@
 		NSInteger numPixels = size.width * size.height;
 		
 		//每像素比特
-		CGFloat bitsPerPixel = 6.0;
+		CGFloat bitsPerPixel = 12.0;
 		NSInteger bitsPerSecond = numPixels * bitsPerPixel;
 		
 		// 码率和帧率设置
@@ -727,8 +729,8 @@
 		//视频属性
 		_videoCompressionSettings = @{ AVVideoCodecKey : AVVideoCodecH264,
 									   AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill,
-									   AVVideoWidthKey : @(size.width),
-									   AVVideoHeightKey : @(size.height),
+									   AVVideoWidthKey : @(size.width - ((int)size.width % 2)),
+									   AVVideoHeightKey : @(size.height - ((int)size.height % 2)),
 									   AVVideoCompressionPropertiesKey : compressionProperties };
 	}
 	
@@ -737,10 +739,11 @@
 
 - (NSDictionary *)audioCompressionSettings {
 	if (!_audioCompressionSettings) {
-		_audioCompressionSettings = @{ AVEncoderBitRatePerChannelKey : @(28000),
+		_audioCompressionSettings = @{ AVEncoderBitRateStrategyKey : AVAudioBitRateStrategy_Variable,
+									   AVEncoderBitRateKey : @(64000),
 									   AVFormatIDKey : @(kAudioFormatMPEG4AAC),
 									   AVNumberOfChannelsKey : @(1),
-									   AVSampleRateKey : @(22050) };
+									   AVSampleRateKey : @(44100) };
 	}
 	
 	return _audioCompressionSettings;
@@ -752,16 +755,6 @@
 	}
 	
 	return _videoTrackOutputSetting;
-}
-
-- (NSDictionary *)audioTrackOutputSetting {
-	if (!_audioTrackOutputSetting) {
-		_audioTrackOutputSetting = @{ (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-									  (id)kCVPixelBufferWidthKey : @(480),
-									  (id)kCVPixelBufferHeightKey : @(320) };
-	}
-	
-	return _audioTrackOutputSetting;
 }
 
 #pragma mark AVCaptureVideoDataOutputSampleBufferDelegate
@@ -1406,8 +1399,7 @@
 	// NSLog(@"left time is %f", self.sourceVideoLeftTime);
 }
 
-- (void)stopAssetWriter
-{
+- (void)stopAssetWriter {
 	if(_writer && _writer.status == AVAssetWriterStatusWriting) {
 		[_writer finishWritingWithCompletionHandler:^{
 			_writer = nil;
@@ -1419,13 +1411,13 @@
 - (void)exportVideo:(void(^)(NSString *))exportResult {
 	NSLog(@"record cost %f", self.cost / self.count);
 	
-	if (![self isSplitRecorder]) {
-		[self exportVideoWithFull:exportResult];
+	if (self.recordState != MultiRecordStateFinish && self.recordState != MultiRecordStateReady) {
+		NSLog(@"export failure. record state is %ld", self.recordState);
 		return;
 	}
 	
-	if (self.recordState != MultiRecordStateFinish) {
-		NSLog(@"export failure. record state is %ld", self.recordState);
+	if (![self isSplitRecorder]) {
+		[self exportVideoWithFull:exportResult];
 		return;
 	}
 	
@@ -1496,7 +1488,7 @@
 	waterMarkVideoComposition.instructions = @[roateInstruction];
 	
 	// 导出
-	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPresetMediumQuality];
+	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPreset640x480];
 	exportSession.videoComposition = waterMarkVideoComposition;
 	exportSession.outputURL = [NSURL fileURLWithPath:self.exportVideoPath];
 	exportSession.outputFileType = AVFileTypeMPEG4;
@@ -1607,7 +1599,7 @@
 	waterMarkVideoComposition.instructions = @[roateInstruction];
 	
 	// 导出
-	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPresetMediumQuality];
+	AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:mc presetName:AVAssetExportPreset1280x720];
 	exportSession.videoComposition = waterMarkVideoComposition;
 	exportSession.outputURL = [NSURL fileURLWithPath:self.exportVideoPath];
 	exportSession.outputFileType = AVFileTypeMPEG4;
