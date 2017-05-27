@@ -21,6 +21,7 @@
 		1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */; };
 		1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */; };
 		1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */; };
+		1E9F86191ED9587C00E33499 /* SingleRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9F86181ED9587C00E33499 /* SingleRecordViewController.m */; };
 		1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA426311D5499AD008B96A7 /* EntryCell.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
@@ -66,6 +67,8 @@
 		1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CaptureToolKit.m; sourceTree = "<group>"; };
 		1E7D3C141EB6DCE500FCE97A /* UISegmentProgressBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISegmentProgressBarViewController.h; sourceTree = "<group>"; };
 		1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UISegmentProgressBarViewController.m; sourceTree = "<group>"; };
+		1E9F86171ED9587C00E33499 /* SingleRecordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleRecordViewController.h; sourceTree = "<group>"; };
+		1E9F86181ED9587C00E33499 /* SingleRecordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SingleRecordViewController.m; sourceTree = "<group>"; };
 		1EA426301D5499AD008B96A7 /* EntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryCell.h; sourceTree = "<group>"; };
 		1EA426311D5499AD008B96A7 /* EntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EntryCell.m; sourceTree = "<group>"; };
 		1EC2E5F01CC2662600A5FC44 /* HelloIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,6 +142,8 @@
 				1E6A5E381EB87E4C00E584EB /* SplitRecordViewController.m */,
 				1E61C8731EC09CAB00075C0A /* MultipleVideoRecorderController.h */,
 				1E61C8741EC09CAB00075C0A /* MultipleVideoRecorderController.m */,
+				1E9F86171ED9587C00E33499 /* SingleRecordViewController.h */,
+				1E9F86181ED9587C00E33499 /* SingleRecordViewController.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -243,7 +248,7 @@
 				TargetAttributes = {
 					1EC2E5EF1CC2662600A5FC44 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = R9V8UVQ5QF;
+						DevelopmentTeam = WR3U379XHN;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -292,6 +297,7 @@
 				34C510C11D5C754B00E4A0BC /* BiggerTableViewCell.m in Sources */,
 				34C510C21D5C754B00E4A0BC /* BiggerTableViewController.m in Sources */,
 				1E13AC4B1DFAAB8400455A03 /* UITableView1.m in Sources */,
+				1E9F86191ED9587C00E33499 /* SingleRecordViewController.m in Sources */,
 				1E2A2D221E4DB595008998A9 /* PlayerView.m in Sources */,
 				1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */,
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
@@ -418,10 +424,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R9V8UVQ5QF;
+				DEVELOPMENT_TEAM = WR3U379XHN;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.test.HelloIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -434,10 +440,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R9V8UVQ5QF;
+				DEVELOPMENT_TEAM = WR3U379XHN;
 				INFOPLIST_FILE = HelloIOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.test.HelloIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seth.mobileqq.HelloIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

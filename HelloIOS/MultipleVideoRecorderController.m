@@ -160,7 +160,7 @@
 // 摄像头
 @property (nonatomic, strong) AVCaptureSession *captureSession;
 @property (nonatomic, strong) AVCaptureDevice *captureDevice;
-@property (nonatomic, strong) AVCaptureDeviceInput *captureDevideInput;
+@property (nonatomic, strong) AVCaptureDeviceInput *videoDeviceInput;
 @property (nonatomic, assign) AVCaptureDevicePosition cameraPosition;
 @property (nonatomic, strong) AVCaptureAudioDataOutput *audioOutput;
 @property (nonatomic, strong) AVCaptureVideoDataOutput *videoOutput;
@@ -409,6 +409,7 @@
 	{
 		return;
 	}
+	_videoDeviceInput = videoDeviceInput;
 	
 	// 创建并配置视频输出组件
 	AVCaptureVideoDataOutput *videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
@@ -494,8 +495,13 @@
 	if(_captureSession) {
 		[_captureSession beginConfiguration];
 		
-		AVCaptureInput* currentCameraInput = [_captureSession.inputs objectAtIndex:0];
-		[_captureSession removeInput:currentCameraInput];
+		AVCaptureDeviceInput *currentCameraInput = _videoDeviceInput;
+		for (AVCaptureDeviceInput *input in _captureSession.inputs) {
+			if (input == _videoDeviceInput) {
+				[_captureSession removeInput:input];
+				break;
+			}
+		}
 		
 		AVCaptureDevice *newCamera = nil;
 		if(((AVCaptureDeviceInput*)currentCameraInput).device.position == AVCaptureDevicePositionBack) {
@@ -507,7 +513,6 @@
 			self.cameraPosition = AVCaptureDevicePositionBack;
 		}
 		
-		//Add input to session
 		NSError *err = nil;
 		AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:newCamera error:&err];
 		if(!newVideoInput || err) {
@@ -515,6 +520,7 @@
 		}
 		else {
 			[_captureSession addInput:newVideoInput];
+			_videoDeviceInput = newVideoInput;
 		}
 		
 		AVCaptureVideoDataOutput *videoDataOutput = _captureSession.outputs.firstObject;
@@ -1528,7 +1534,9 @@
 			}
 		}
 		
-		self.recordState = MultiRecordStateExported;
+		dispatch_async(dispatch_get_main_queue(), ^(){
+			self.recordState = MultiRecordStateExported;
+		});
 	}];
 }
 
@@ -1639,7 +1647,9 @@
 			}
 		}
 		
-		self.recordState = MultiRecordStateExported;
+		dispatch_async(dispatch_get_main_queue(), ^(){
+			self.recordState = MultiRecordStateExported;
+		});
 	}];
 }
 

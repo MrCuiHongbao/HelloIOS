@@ -63,7 +63,8 @@
 				   @"VideoCompositionController",
 				   @"UISegmentProgressBarViewController",
 				   @"SplitRecordViewController",
-				   @"FlipTestViewController"];
+				   @"FlipTestViewController",
+				   @"SingleRecordViewController"];
 }
 
 - (void)clickBtn:(id)sender

@@ -29,6 +29,8 @@ typedef NS_ENUM(NSInteger, FMRecordState) {
 
 @interface SplitRecordViewController : UIViewController
 
+@property (nonatomic) BOOL isSingle;
+
 @property(nonatomic, weak) id<VideoDelegate> delegate;
 
 @end

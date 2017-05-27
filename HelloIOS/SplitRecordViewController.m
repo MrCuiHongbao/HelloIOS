@@ -14,6 +14,10 @@
 
 @interface SplitRecordViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate, MultipleVideoRecorderControllerDelegate>
 
+@property (nonatomic, retain) UIView *topPanel;
+
+@property (nonatomic, retain) UIView *bottomPanel;
+
 @property (nonatomic, retain) UIButton *closeBtn;
 
 @property (nonatomic, retain) UIButton *switchBtn;
@@ -52,8 +56,6 @@
 
 @property (nonatomic, retain) MultipleVideoRecorderController *recorderController;
 
-@property (nonatomic) BOOL isSingle;
-
 @end
 
 @implementation SplitRecordViewController
@@ -69,10 +71,28 @@
 
 #pragma mark init view
 
+- (UIView *)topPanel {
+	if (!_topPanel) {
+		_topPanel = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.sw, 60)];
+		[_topPanel setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.3]];
+	}
+	
+	return _topPanel;
+}
+
+- (UIView *)bottomPanel {
+	if (!_bottomPanel) {
+		_bottomPanel = [[UIView alloc] initWithFrame:CGRectMake(0, self.sh - 60, self.sw, 60)];
+		[_bottomPanel setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.3]];
+	}
+	
+	return _bottomPanel;
+}
+
 - (UIButton *)closeBtn {
 	if (!_closeBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(0, 0, 60, 40)];
+		[btn setFrame:CGRectMake(0, 0, self.sw / 3, 40)];
 		[btn setTitle:@"关闭" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_closeBtn = btn;
@@ -84,7 +104,7 @@
 - (UIButton *)switchBtn {
 	if (!_switchBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(self.sw - 60, 0, 60, 40)];
+		[btn setFrame:CGRectMake(self.sw * 2 / 3, 0, self.sw / 3, 40)];
 		[btn setTitle:@"切换" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_switchBtn = btn;
@@ -96,7 +116,7 @@
 - (UIButton *)exportBtn {
 	if (!_exportBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(self.sw / 3, 0, 60, 40)];
+		[btn setFrame:CGRectMake(self.sw / 3, 0, self.sw / 3, 40)];
 		[btn setTitle:@"导出" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_exportBtn = btn;
@@ -108,7 +128,7 @@
 - (UIButton *)recordBtn {
 	if (!_recordBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(self.sw / 3, self.sh - 40, self.sw / 3, 40)];
+		[btn setFrame:CGRectMake(self.sw / 3, 0, self.sw / 3, 40)];
 		[btn setTitle:@"录制" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_recordBtn = btn;
@@ -120,7 +140,7 @@
 - (UIButton *)deleteBtn {
 	if (!_deleteBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(0, self.sh - 40, self.sw / 3, 40)];
+		[btn setFrame:CGRectMake(0, 0, self.sw / 3, 40)];
 		[btn setTitle:@"删除" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_deleteBtn = btn;
@@ -132,7 +152,7 @@
 - (UIButton *)pickerBtn {
 	if (!_pickerBtn) {
 		UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-		[btn setFrame:CGRectMake(self.sw * 2 / 3, self.sh - 40, self.sw / 3, 40)];
+		[btn setFrame:CGRectMake(self.sw * 2 / 3, 0, self.sw / 3, 40)];
 		[btn setTitle:@"选视频" forState:UIControlStateNormal];
 		[btn addTarget:self action:@selector(onClickBtn:) forControlEvents:UIControlEventTouchUpInside];
 		_pickerBtn = btn;
@@ -213,13 +233,16 @@
 }
 
 - (void)setupControlPanel {
-	[self.view addSubview:self.closeBtn];
-	[self.view addSubview:self.exportBtn];
-	[self.view addSubview:self.switchBtn];
-	[self.view addSubview:self.deleteBtn];
-	[self.view addSubview:self.recordBtn];
-	[self.view addSubview:self.pickerBtn];
-	// [self.view addSubview:self.durationView];
+	[self.view addSubview:self.topPanel];
+	[self.view addSubview:self.bottomPanel];
+	
+	[self.topPanel addSubview:self.closeBtn];
+	[self.topPanel addSubview:self.exportBtn];
+	[self.topPanel addSubview:self.switchBtn];
+	
+	[self.bottomPanel addSubview:self.deleteBtn];
+	[self.bottomPanel addSubview:self.recordBtn];
+	[self.bottomPanel addSubview:self.pickerBtn];
 }
 
 - (void)setupPreview {
