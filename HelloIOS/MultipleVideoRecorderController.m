@@ -767,18 +767,18 @@
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 	if ([self isSplitRecorder]) {
-		[self renderByGL1:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
+		[self renderSplit:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
 		return;
 	}
 	
-	[self renderByGL:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
+	[self renderSingle:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 	
 }
 
-- (void)renderByGL1:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+- (void)renderSplit:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 	NSDate *start = nil;
 	if (self.recordState == MultiRecordStateRecording) {
 		start = [NSDate date];
@@ -855,7 +855,7 @@
 	}
 }
 
-- (void)renderByGL:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+- (void)renderSingle:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 	if (!CMSampleBufferDataIsReady(sampleBuffer)) {
 		return;
 	}
@@ -1534,9 +1534,7 @@
 			}
 		}
 		
-		dispatch_async(dispatch_get_main_queue(), ^(){
-			self.recordState = MultiRecordStateExported;
-		});
+		self.recordState = MultiRecordStateExported;
 	}];
 }
 
@@ -1647,9 +1645,7 @@
 			}
 		}
 		
-		dispatch_async(dispatch_get_main_queue(), ^(){
-			self.recordState = MultiRecordStateExported;
-		});
+		self.recordState = MultiRecordStateExported;
 	}];
 }
 
