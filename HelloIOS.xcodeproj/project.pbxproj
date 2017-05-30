@@ -15,11 +15,9 @@
 		1E434A3D1DDEE1810099EB15 /* UITestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E434A3C1DDEE1810099EB15 /* UITestController.m */; };
 		1E434AB11DDEF0B40099EB15 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 1E434AAF1DDEEC1D0099EB15 /* Resource */; };
 		1E54A8771D53896F004ABE82 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E54A8761D53896F004ABE82 /* MainViewController.m */; };
-		1E61C8751EC09CAB00075C0A /* MultipleVideoRecorderController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E61C8741EC09CAB00075C0A /* MultipleVideoRecorderController.m */; };
 		1E6A5E391EB87E4C00E584EB /* SplitRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6A5E381EB87E4C00E584EB /* SplitRecordViewController.m */; };
 		1E7D3BDA1EB5EDB800FCE97A /* VideoCompositionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */; };
 		1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */; };
-		1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */; };
 		1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */; };
 		1E9F86191ED9587C00E33499 /* SingleRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9F86181ED9587C00E33499 /* SingleRecordViewController.m */; };
 		1E9F86E71EDD110900E33499 /* CameraOutputAbstractLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9F86E61EDD110900E33499 /* CameraOutputAbstractLayer.m */; };
@@ -60,16 +58,12 @@
 		1E434AAF1DDEEC1D0099EB15 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
 		1E54A8751D53896F004ABE82 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		1E54A8761D53896F004ABE82 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
-		1E61C8731EC09CAB00075C0A /* MultipleVideoRecorderController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultipleVideoRecorderController.h; sourceTree = "<group>"; };
-		1E61C8741EC09CAB00075C0A /* MultipleVideoRecorderController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MultipleVideoRecorderController.m; sourceTree = "<group>"; };
 		1E6A5E371EB87E4C00E584EB /* SplitRecordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplitRecordViewController.h; sourceTree = "<group>"; };
 		1E6A5E381EB87E4C00E584EB /* SplitRecordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SplitRecordViewController.m; sourceTree = "<group>"; };
 		1E7D3BD81EB5EDB800FCE97A /* VideoCompositionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoCompositionController.h; sourceTree = "<group>"; };
 		1E7D3BD91EB5EDB800FCE97A /* VideoCompositionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoCompositionController.m; sourceTree = "<group>"; };
 		1E7D3C0B1EB6DA2A00FCE97A /* UISegmentProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISegmentProgressBar.h; sourceTree = "<group>"; };
 		1E7D3C0C1EB6DA2A00FCE97A /* UISegmentProgressBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UISegmentProgressBar.m; sourceTree = "<group>"; };
-		1E7D3C111EB6DAEA00FCE97A /* CaptureToolKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaptureToolKit.h; sourceTree = "<group>"; };
-		1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CaptureToolKit.m; sourceTree = "<group>"; };
 		1E7D3C141EB6DCE500FCE97A /* UISegmentProgressBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISegmentProgressBarViewController.h; sourceTree = "<group>"; };
 		1E7D3C151EB6DCE500FCE97A /* UISegmentProgressBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UISegmentProgressBarViewController.m; sourceTree = "<group>"; };
 		1E9F86171ED9587C00E33499 /* SingleRecordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleRecordViewController.h; sourceTree = "<group>"; };
@@ -177,12 +171,8 @@
 				1E9F87771EDD715E00E33499 /* MultipleVideoRecorderController.m */,
 				1E9F86E51EDD110900E33499 /* CameraOutputAbstractLayer.h */,
 				1E9F86E61EDD110900E33499 /* CameraOutputAbstractLayer.m */,
-				1E7D3C111EB6DAEA00FCE97A /* CaptureToolKit.h */,
-				1E7D3C121EB6DAEA00FCE97A /* CaptureToolKit.m */,
 				1E9F874C1EDD13FA00E33499 /* DemoCameraPicker.h */,
 				1E9F874D1EDD13FA00E33499 /* DemoCameraPicker.m */,
-				1E61C8731EC09CAB00075C0A /* MultipleVideoRecorderController.h */,
-				1E61C8741EC09CAB00075C0A /* MultipleVideoRecorderController.m */,
 				1E9F874F1EDD16CB00E33499 /* VideoRecordSettings.h */,
 				1E9F87501EDD16CB00E33499 /* VideoRecordSettings.m */,
 			);
@@ -336,7 +326,6 @@
 				1EC2E6011CC2662600A5FC44 /* HelloIOS.xcdatamodeld in Sources */,
 				1E13AC4E1DFAD5EA00455A03 /* UITableViewEnhancedController.m in Sources */,
 				1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */,
-				1E61C8751EC09CAB00075C0A /* MultipleVideoRecorderController.m in Sources */,
 				1E6A5E391EB87E4C00E584EB /* SplitRecordViewController.m in Sources */,
 				1E7D3BDA1EB5EDB800FCE97A /* VideoCompositionController.m in Sources */,
 				1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */,
@@ -345,7 +334,6 @@
 				34B6F0AD1DD968EB00E46C20 /* SimpleTableViewController.m in Sources */,
 				1E9F87781EDD715E00E33499 /* CaptureToolKit.m in Sources */,
 				1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */,
-				1E7D3C131EB6DAEA00FCE97A /* CaptureToolKit.m in Sources */,
 				1E9F87791EDD715E00E33499 /* MultipleVideoRecorderController.m in Sources */,
 				1E7D3C161EB6DCE500FCE97A /* UISegmentProgressBarViewController.m in Sources */,
 				1E9F87511EDD16CB00E33499 /* VideoRecordSettings.m in Sources */,
