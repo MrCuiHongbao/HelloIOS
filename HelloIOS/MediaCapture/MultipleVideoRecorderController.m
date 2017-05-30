@@ -9,6 +9,7 @@
 #import "MultipleVideoRecorderController.h"
 #import "CaptureToolKit.h"
 #import "DemoCameraPicker.h"
+// #import "ReadInJoyMediaPicker.h"
 #import "VideoRecordSettings.h"
 
 #pragma mark GLKViewWithBounds
@@ -199,6 +200,8 @@
 
 @property (nonatomic, strong) CameraOutputAbstractLayer *cameraOutput;
 
+@property (nonatomic) BOOL canWriterSplitVideo;
+
 @end
 
 @implementation MultipleVideoRecorderController
@@ -231,15 +234,20 @@
 	self.isFirstFrame = YES;
 	
 	// 视频数据输出模块
-	_cameraOutput = [DemoCameraPicker new];
-	_cameraOutput.delegate = self;
-	_cameraOutput.cameraPosition = AVCaptureDevicePositionBack;
-	_cameraOutput.needAudio = isSingle;
-	_cameraOutput.captureSessionPreset = isSingle ? AVCaptureSessionPreset1280x720 : AVCaptureSessionPreset640x480;
+    [self initMediaPicker:isSingle];
 	
 	self.isFullscreenRecord = isSingle;
 	
 	self.recordState = MultiRecordStateInit;
+}
+
+- (void)initMediaPicker:(BOOL)isSingle {
+    _cameraOutput = [DemoCameraPicker new];
+    //_cameraOutput = [ReadInJoyMediaPicker new];
+    _cameraOutput.delegate = self;
+    _cameraOutput.cameraPosition = AVCaptureDevicePositionBack;
+    _cameraOutput.needAudio = isSingle;
+    _cameraOutput.captureSessionPreset = isSingle ? AVCaptureSessionPreset1280x720 : AVCaptureSessionPreset640x480;
 }
 
 - (void)dealloc {
@@ -518,25 +526,30 @@
 	[self renderFrame:destImage];
 	
 	// 录制视频
-	@synchronized (self) {
-		if (self.recordState == MultiRecordStateRecording) {
-			if ([self isSplitRecorder]) {
-				if (self.currentVideoBuffer) {
-					CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-					dispatch_async(_writerQueue, ^() {
-						[self outputVideoFrame:destImage withPresentationTime:presentationTime];
-					});
-				}
-			} else {
-				CFRetain(sampleBuffer);
-				dispatch_async(_writerQueue, ^(){
-					[self appendSampleBuffer:AVMediaTypeVideo CMSampleBufferRef:sampleBuffer];
-					CFRelease(sampleBuffer);
-				});
-			}
-		}
-	}
-	
+    if ([self isSplitRecorder]) {
+        CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+        dispatch_async(_writerQueue, ^() {
+            @synchronized (self) {
+                if (self.recordState == MultiRecordStateRecording) {
+                    if (self.canWriterSplitVideo) {
+                        [self outputVideoFrame:destImage withPresentationTime:presentationTime];
+                        self.canWriterSplitVideo = NO;
+                    }
+                }
+            }
+        });
+    } else {
+        CFRetain(sampleBuffer);
+        dispatch_async(_writerQueue, ^() {
+            @synchronized (self) {
+                if (self.recordState == MultiRecordStateRecording) {
+                    [self appendSampleBuffer:AVMediaTypeVideo CMSampleBufferRef:sampleBuffer];
+                    CFRelease(sampleBuffer);
+                }
+            }
+        });
+    }
+
 	if (self.recordState == MultiRecordStateRecording && start) {
 		NSDate *end = [NSDate date];
 		NSTimeInterval cost = [end timeIntervalSinceDate:start];
@@ -602,6 +615,12 @@
 		}
 		
 		ret = [self renderFrameLeft2:captureFrame right:sourceVideoFrame overlayColor:NO];
+        
+        if (sourceVideoFrame) {
+            @synchronized (self) {
+                self.canWriterSplitVideo = YES;
+            }
+        }
 	} else {
 		CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 		ret = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
