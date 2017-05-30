@@ -8,6 +8,8 @@
 
 #import "MultipleVideoRecorderController.h"
 #import "CaptureToolKit.h"
+#import "DemoCameraPicker.h"
+#import "VideoRecordSettings.h"
 
 #pragma mark GLKViewWithBounds
 
@@ -135,7 +137,7 @@
 
 #pragma mark MultipleVideoRecorderController
 
-@interface MultipleVideoRecorderController () <AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate>
+@interface MultipleVideoRecorderController () <CameraOutputAbstractLayerDelegate>
 
 @property (nonatomic, assign) int sw;
 @property (nonatomic, assign) int sh;
@@ -152,18 +154,9 @@
 @property (nonatomic, strong) NSObject *lock;
 
 // 队列
-@property (nonatomic, strong) dispatch_queue_t captureSessionQueue;
 @property (nonatomic, strong) dispatch_queue_t writerQueue;
 @property (nonatomic, strong) dispatch_queue_t readerQueue;
 @property (nonatomic, strong) dispatch_source_t readerTimer;
-
-// 摄像头
-@property (nonatomic, strong) AVCaptureSession *captureSession;
-@property (nonatomic, strong) AVCaptureDevice *captureDevice;
-@property (nonatomic, strong) AVCaptureDeviceInput *videoDeviceInput;
-@property (nonatomic, assign) AVCaptureDevicePosition cameraPosition;
-@property (nonatomic, strong) AVCaptureAudioDataOutput *audioOutput;
-@property (nonatomic, strong) AVCaptureVideoDataOutput *videoOutput;
 
 // 写视频
 @property (nonatomic, strong) AVAssetWriter *writer;
@@ -189,15 +182,8 @@
 @property (nonatomic, strong) AVPlayer *audioPlayer;
 @property (nonatomic, assign) BOOL isAudioPlaying;
 
-@property (nonatomic, strong) NSDictionary *videoSettings;
-@property (nonatomic, strong) NSDictionary *videoCompressionSettings;
-@property (nonatomic, strong) NSDictionary *audioCompressionSettings;
-@property (nonatomic, strong) NSDictionary *adaptorSettings;
-@property (nonatomic, strong) NSDictionary *videoTrackOutputSetting;
-@property (nonatomic, strong) NSDictionary *audioTrackOutputSetting;
-
 @property (nonatomic) CMSampleBufferRef currentVideoBuffer;
-@property (nonatomic, retain) NSMutableArray *videoSnapshots;
+@property (nonatomic, strong) NSMutableArray *videoSnapshots;
 
 @property (nonatomic, strong) NSString *exportVideoPath;
 @property (nonatomic, strong) NSString *sourceVideoPath;
@@ -210,6 +196,8 @@
 @property (nonatomic, strong) NSDate *costDate;
 
 @property (nonatomic) BOOL isFullscreenRecord;
+
+@property (nonatomic, strong) CameraOutputAbstractLayer *cameraOutput;
 
 @end
 
@@ -242,7 +230,12 @@
 	
 	self.isFirstFrame = YES;
 	
-	self.cameraPosition = AVCaptureDevicePositionBack;
+	// 视频数据输出模块
+	_cameraOutput = [DemoCameraPicker new];
+	_cameraOutput.delegate = self;
+	_cameraOutput.cameraPosition = AVCaptureDevicePositionBack;
+	_cameraOutput.needAudio = isSingle;
+	_cameraOutput.captureSessionPreset = isSingle ? AVCaptureSessionPreset1280x720 : AVCaptureSessionPreset640x480;
 	
 	self.isFullscreenRecord = isSingle;
 	
@@ -284,30 +277,33 @@
 // 安装摄像头设备
 - (void)setupCapture {
 	if ([[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] count] > 0) {
-		_captureSessionQueue = dispatch_queue_create("capture_session_queue", DISPATCH_QUEUE_SERIAL);
 		_writerQueue = dispatch_queue_create("asset_writer_queue", DISPATCH_QUEUE_SERIAL);
 		_readerQueue = dispatch_queue_create("asset_reader_queue", DISPATCH_QUEUE_SERIAL);
 		
 		[self setupContexts];
 		
-		[self setupCaptureSession];
+		[_cameraOutput setupCapture];
 		
 		self.recordState = MultiRecordStateReady;
 	}
 }
 
 - (void)uninstallCapture {
-	if (self.captureSession) {
-		[self.captureSession stopRunning];
-	}
+	[_cameraOutput uninstallCapture];
 	
 	[self stopVideoExtrace];
+}
+
+- (void)switchCamera {
+	[_cameraOutput switchCamera];
 }
 
 - (GLKViewWithBounds *)setupRenderWidth:(CGRect)frame {
 	if (!_feedView) {
 		_feedView = [self setupFeedViewWithFrame:frame];
 		[_feedView setBackgroundColor:[UIColor colorWithWhite:0.1 alpha:1]];
+		
+		[[VideoRecordSettings shareInstance] setRecordResolution:self.feedView.viewBounds.size];
 	}
 	
 	return _feedView;
@@ -353,187 +349,6 @@
 										   options:@{kCIContextWorkingColorSpace : [NSNull null]} ];
 }
 
-- (AVCaptureDevice *)deviceWithMediaType:(NSString *)mediaType preferringPosition:(AVCaptureDevicePosition)position {
-	NSArray *devices = [AVCaptureDevice devicesWithMediaType:mediaType];
-	
-	AVCaptureDevice *captureDevice = devices.firstObject;
-	for (AVCaptureDevice *device in devices) {
-		if (device.position == position) {
-			captureDevice = device;
-			break;
-		}
-	}
-	return captureDevice;
-}
-
-- (void)setupCaptureSession {
-	if (_captureSession) {
-		return;
-	}
-	
-	dispatch_async(_captureSessionQueue, ^(void) {
-		// 初始化摄像头会话
-		_captureSession = [[AVCaptureSession alloc] init];
-		
-		// 获取输出规格
-		NSString *preset = AVCaptureSessionPreset640x480;
-		if (![self isSplitRecorder]) {
-			preset = AVCaptureSessionPreset1280x720;
-		}
-		if ([_captureSession canSetSessionPreset:preset]) {
-			_captureSession.sessionPreset = preset;
-		}
-		
-		[_captureSession beginConfiguration];
-		
-		[self addVideoDevice];
-		
-		[self addAudioDevice];
-		
-		//[self addPreviewLayer];
-		
-		[_captureSession commitConfiguration];
-		
-		[_captureSession startRunning];
-	});
-}
-
-- (void)addVideoDevice {
-	// 获取视频设备
-	AVCaptureDevice *videoDevice = [self cameraWithPosition:self.cameraPosition];
-	
-	// 获取设备输入组件
-	NSError *error = nil;
-	AVCaptureDeviceInput *videoDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
-	if (!videoDeviceInput || error)
-	{
-		return;
-	}
-	_videoDeviceInput = videoDeviceInput;
-	
-	// 创建并配置视频输出组件
-	AVCaptureVideoDataOutput *videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
-	videoDataOutput.videoSettings = self.videoSettings;
-	[videoDataOutput setSampleBufferDelegate:self queue:_captureSessionQueue];
-	
-	if (![_captureSession canAddOutput:videoDataOutput])
-	{
-		_captureSession = nil;
-		return;
-	}
-	
-	[_captureSession addInput:videoDeviceInput];
-	[_captureSession addOutput:videoDataOutput];
-	
-	AVCaptureConnection *conn = [self videoCaptureConnection:videoDataOutput];
-	if (conn && conn.supportsVideoMirroring) {
-		conn.videoMirrored = self.cameraPosition == AVCaptureDevicePositionFront;
-		conn.videoOrientation = AVCaptureVideoOrientationLandscapeRight;
-	}
-	
-	_videoOutput = videoDataOutput;
-}
-
-- (void)addAudioDevice {
-	if ([self isSplitRecorder]) {
-		return;
-	}
-	
-	//添加一个音频设备
-	NSError *audioError;
-	AVCaptureDevice *audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
-	
-	// 音频输入对象
-	AVCaptureDeviceInput *audioDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:audioDevice error:&audioError];
-	if (audioError) {
-		NSLog(@"取得录音设备时出错 ------ %@",audioError);
-		return;
-	}
-	
-	AVCaptureAudioDataOutput *audioDataOutput = [[AVCaptureAudioDataOutput alloc] init];
-	[audioDataOutput setSampleBufferDelegate:self queue:_captureSessionQueue];
-	
-	if ([_captureSession canAddInput:audioDeviceInput]) {
-		[_captureSession addInput:audioDeviceInput];
-	}
-	
-	if ([_captureSession canAddOutput:audioDataOutput]) {
-		[_captureSession addOutput:audioDataOutput];
-	}
-	
-	_audioOutput = audioDataOutput;
-}
-
-- (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position {
-	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	for (AVCaptureDevice *device in devices) {
-		if ([device position] == position) {
-			return device;
-		}
-	}
-	return nil;
-}
-
-- (AVCaptureConnection *)videoCaptureConnection:(AVCaptureVideoDataOutput *)videoOutput {
-	for (AVCaptureConnection *connection in [videoOutput connections] ) {
-		for ( AVCaptureInputPort *port in [connection inputPorts] ) {
-			if ( [[port mediaType] isEqual:AVMediaTypeVideo] ) {
-				return connection;
-			}
-		}
-	}
-	
-	return nil;
-}
-
-- (void)switchCamera {
-	NSUInteger cameraCount = [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] count];
-	if (cameraCount <= 1) {
-		return;
-	}
-	
-	if(_captureSession) {
-		[_captureSession beginConfiguration];
-		
-		AVCaptureDeviceInput *currentCameraInput = _videoDeviceInput;
-		for (AVCaptureDeviceInput *input in _captureSession.inputs) {
-			if (input == _videoDeviceInput) {
-				[_captureSession removeInput:input];
-				break;
-			}
-		}
-		
-		AVCaptureDevice *newCamera = nil;
-		if(((AVCaptureDeviceInput*)currentCameraInput).device.position == AVCaptureDevicePositionBack) {
-			newCamera = [self cameraWithPosition:AVCaptureDevicePositionFront];
-			self.cameraPosition = AVCaptureDevicePositionFront;
-		}
-		else {
-			newCamera = [self cameraWithPosition:AVCaptureDevicePositionBack];
-			self.cameraPosition = AVCaptureDevicePositionBack;
-		}
-		
-		NSError *err = nil;
-		AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:newCamera error:&err];
-		if(!newVideoInput || err) {
-			NSLog(@"Error creating capture device input: %@", err.localizedDescription);
-		}
-		else {
-			[_captureSession addInput:newVideoInput];
-			_videoDeviceInput = newVideoInput;
-		}
-		
-		AVCaptureVideoDataOutput *videoDataOutput = _captureSession.outputs.firstObject;
-		AVCaptureConnection *conn = [self videoCaptureConnection:videoDataOutput];
-		if (conn && conn.supportsVideoMirroring) {
-			conn.videoMirrored = self.cameraPosition == AVCaptureDevicePositionFront;
-			conn.videoOrientation = AVCaptureVideoOrientationLandscapeRight;
-		}
-		
-		[_captureSession commitConfiguration];
-	}
-}
-
 - (void)setupSourceVideo:(NSString *)sourceVideo {
 	self.sourceVideoPath = sourceVideo;
 	
@@ -562,7 +377,6 @@
 	}
 }
 
-// 开始录制分段
 - (BOOL)startRecord {
 	if (self.recordState != MultiRecordStateReady) {
 		NSLog(@"recordState must be MultiRecordStateReady or MultiRecordStateWillDeleteSplit");
@@ -599,7 +413,6 @@
 	return YES;
 }
 
-// 停止录制分段
 - (void)stopRecord:(MultiRecordState)state {
 	if (self.recordState != MultiRecordStateRecording) {
 		NSLog(@"recordState must be MultiRecordStateRecording");
@@ -686,176 +499,9 @@
 	return 0;
 }
 
-- (CGSize)recordResolution {
-	return self.feedView.viewBounds.size;
-}
+#pragma mark CameraOutputAbstractLayerDelegate
 
-#pragma mark All settings
-
-- (NSDictionary*) videoSettings {
-	// CoreImage wants BGRA pixel format
-	if (!_videoSettings) {
-		_videoSettings = @{ (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
-	}
-	
-	return _videoSettings;
-}
-
-- (NSDictionary*) adaptorSettings {
-	if (!_adaptorSettings) {
-		CGSize size = [self recordResolution];
-		
-		//宽高是视频帧的宽高
-		_adaptorSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA),
-							 (id)kCVPixelBufferWidthKey: @(size.width),
-							 (id)kCVPixelBufferHeightKey: @(size.height),
-							 @"IOSurfaceOpenGLESTextureCompatibility": @YES,
-							 @"IOSurfaceOpenGLESFBOCompatibility": @YES,};
-	}
-	
-	return _adaptorSettings;
-}
-
-- (NSDictionary *)videoCompressionSettings {
-	if (!_videoCompressionSettings) {
-		//写入视频大小
-		CGSize size = [self recordResolution];
-		NSInteger numPixels = size.width * size.height;
-		
-		//每像素比特
-		CGFloat bitsPerPixel = 12.0;
-		NSInteger bitsPerSecond = numPixels * bitsPerPixel;
-		
-		// 码率和帧率设置
-		NSDictionary *compressionProperties = @{ AVVideoAverageBitRateKey : @(bitsPerSecond),
-												 AVVideoExpectedSourceFrameRateKey : @(30),
-												 AVVideoMaxKeyFrameIntervalKey : @(30),
-												 AVVideoProfileLevelKey : AVVideoProfileLevelH264BaselineAutoLevel };
-		
-		//视频属性
-		_videoCompressionSettings = @{ AVVideoCodecKey : AVVideoCodecH264,
-									   AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill,
-									   AVVideoWidthKey : @(size.width - ((int)size.width % 2)),
-									   AVVideoHeightKey : @(size.height - ((int)size.height % 2)),
-									   AVVideoCompressionPropertiesKey : compressionProperties };
-	}
-	
-	return _videoCompressionSettings;
-}
-
-- (NSDictionary *)audioCompressionSettings {
-	if (!_audioCompressionSettings) {
-		_audioCompressionSettings = @{ AVEncoderBitRateStrategyKey : AVAudioBitRateStrategy_Variable,
-									   AVEncoderBitRateKey : @(64000),
-									   AVFormatIDKey : @(kAudioFormatMPEG4AAC),
-									   AVNumberOfChannelsKey : @(1),
-									   AVSampleRateKey : @(44100) };
-	}
-	
-	return _audioCompressionSettings;
-}
-
-- (NSDictionary *)videoTrackOutputSetting {
-	if (!_videoTrackOutputSetting) {
-		_videoTrackOutputSetting = @{ (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
-	}
-	
-	return _videoTrackOutputSetting;
-}
-
-#pragma mark AVCaptureVideoDataOutputSampleBufferDelegate
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-	if ([self isSplitRecorder]) {
-		[self renderSplit:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
-		return;
-	}
-	
-	[self renderSingle:captureOutput didOutputSampleBuffer:sampleBuffer fromConnection:connection];
-}
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-	
-}
-
-- (void)renderSplit:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-	NSDate *start = nil;
-	if (self.recordState == MultiRecordStateRecording) {
-		start = [NSDate date];
-	}
-	
-	CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-	
-	CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-	CIImage *captureFrame = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
-	
-	CIImage *sourceVideoFrame = nil;
-	@synchronized(self.lock) {
-		if (self.currentVideoBuffer) {
-			CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
-			sourceVideoFrame = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
-			//presentationTime = CMSampleBufferGetPresentationTimeStamp(self.currentVideoBuffer);
-		}
-	}
-	
-	CIImage *destImage = [self renderFrameLeft2:captureFrame right:sourceVideoFrame overlayColor:NO];
-	
-	if (self.recordState == MultiRecordStateRecording && start) {
-		NSDate *end = [NSDate date];
-		NSTimeInterval cost = [end timeIntervalSinceDate:start];
-		//NSLog(@"record video cost %f", cost);
-		start = end;
-		
-		self.cost += cost;
-		self.count++;
-	}
-	
-	[self.feedView bindDrawable];
-	
-	if (_eaglContext != [EAGLContext currentContext]) {
-		[EAGLContext setCurrentContext:_eaglContext];
-	}
-	
-	// clear eagl view to black
-	glClearColor(0, 0, 0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
-	// set the blend mode to "source over" so that CI will use that
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	
-	// 绘制视频帧到屏幕上
-	if (destImage) {
-		[_ciContext drawImage:destImage inRect:_feedView.viewBounds fromRect:destImage.extent];
-	}
-	
-	[_feedView display];
-	
-	if (sourceVideoFrame) {
-		dispatch_async(_writerQueue, ^(){
-			[self outputVideoFrame:destImage withPresentationTime:presentationTime];
-		});
-	}
-}
-
-- (void)outputVideoFrame:(CIImage *)frame withPresentationTime:(CMTime)presentationTime {
-	@synchronized (self) {
-		if (self.recordState == MultiRecordStateRecording) {
-			CVPixelBufferRef renderBuffer = NULL;
-			CVPixelBufferPoolCreatePixelBuffer(NULL, _writerInputPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
-			if (renderBuffer) {
-				CVPixelBufferLockBaseAddress(renderBuffer, 0);
-				[_ciContext render:frame toCVPixelBuffer:renderBuffer bounds:_feedView.viewBounds colorSpace:NULL];
-				CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
-				
-				[self appendSampleBuffer:AVMediaTypeVideo CVPixelBufferRef:renderBuffer withPresentationTime:presentationTime];
-				CFRelease(renderBuffer);
-			}
-		}
-	}
-}
-
-- (void)renderSingle:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+- (void) onCaptureVideoSampleBuffer:(CMSampleBufferRef) sampleBuffer {
 	if (!CMSampleBufferDataIsReady(sampleBuffer)) {
 		return;
 	}
@@ -865,70 +511,35 @@
 		start = [NSDate date];
 	}
 	
-	if (captureOutput == _videoOutput) {
-		CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-		CIImage *sourceImage = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
-		
-		CGRect sourceExtent = sourceImage.extent;
-		CGFloat sourceAspect = sourceExtent.size.width / sourceExtent.size.height;
-		
-		GLKViewWithBounds *feedView = self.feedView;
-		
-		CGSize previewSize1 = CGSizeMake(feedView.viewBounds.size.width, feedView.viewBounds.size.height);
-		CGRect inRect = CGRectMake(0, 0, feedView.viewBounds.size.width, feedView.viewBounds.size.height);
-		CGFloat previewAspect1 = previewSize1.width / previewSize1.height;
-		
-		// we want to maintain the aspect radio of the screen size, so we clip the video image
-		CGRect drawRect = sourceExtent;
-		if (sourceAspect > previewAspect1) {
-			// use full height of the video image, and center crop the width
-			drawRect.origin.x += (drawRect.size.width - drawRect.size.height * previewAspect1) / 2.0;
-			drawRect.size.width = drawRect.size.height * previewAspect1;
-		} else {
-			// use full width of the video image, and center crop the height
-			drawRect.origin.y += (drawRect.size.height - drawRect.size.width / previewAspect1) / 2.0;
-			drawRect.size.height = drawRect.size.width / previewAspect1;
-		}
-		
-		[feedView bindDrawable];
-		
-		if (_eaglContext != [EAGLContext currentContext]) {
-			[EAGLContext setCurrentContext:_eaglContext];
-		}
-		
-		// clear eagl view to grey
-		glClearColor(0, 0, 0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		// set the blend mode to "source over" so that CI will use that
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		
-		if (sourceImage) {
-			[_ciContext drawImage:sourceImage inRect:inRect fromRect:drawRect];
-		}
-		
-		UIImage *image;
-		[image drawInRect:inRect];
-		
-		[feedView display];
-	}
+	// 合成渲染帧
+	CIImage *destImage = [self getRenderFrame:sampleBuffer];
 	
+	// 渲染帧
+	[self renderFrame:destImage];
+	
+	// 录制视频
 	@synchronized (self) {
 		if (self.recordState == MultiRecordStateRecording) {
-			CFRetain(sampleBuffer);
-			dispatch_async(_writerQueue, ^(){
-				NSString *mediaType = (captureOutput == _videoOutput) ? AVMediaTypeVideo : AVMediaTypeAudio;
-				[self appendSampleBuffer:mediaType CMSampleBufferRef:sampleBuffer];
-				CFRelease(sampleBuffer);
-			});
+			if ([self isSplitRecorder]) {
+				if (self.currentVideoBuffer) {
+					CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+					dispatch_async(_writerQueue, ^() {
+						[self outputVideoFrame:destImage withPresentationTime:presentationTime];
+					});
+				}
+			} else {
+				CFRetain(sampleBuffer);
+				dispatch_async(_writerQueue, ^(){
+					[self appendSampleBuffer:AVMediaTypeVideo CMSampleBufferRef:sampleBuffer];
+					CFRelease(sampleBuffer);
+				});
+			}
 		}
 	}
 	
 	if (self.recordState == MultiRecordStateRecording && start) {
 		NSDate *end = [NSDate date];
 		NSTimeInterval cost = [end timeIntervalSinceDate:start];
-		//NSLog(@"record video cost %f", cost);
 		start = end;
 		
 		self.cost += cost;
@@ -936,92 +547,107 @@
 	}
 }
 
-- (CIImage *)renderFrameLeft:(CIImage *)image1 right:(CIImage *)image2 overlayColor:(BOOL)overlay {
-	// 绘制屏幕尺寸的宽高比
-	CGSize size = self.feedView.viewBounds.size;
-	CGFloat destAsptect = size.width / (size.height / 2);
-	
-	UIImage *tmp1 = nil;
-	UIImage *tmp2 = nil;
-	if (image1) {
-		CGRect image1Rect = image1.extent;
-		CGFloat image1Asptect = CGRectGetWidth(image1Rect) / CGRectGetHeight(image1Rect);
-		if (image1Asptect < destAsptect) {
-			image1Rect.origin.y = (CGRectGetHeight(image1Rect) - CGRectGetWidth(image1Rect) / destAsptect) / 2;
-			image1Rect.size.height = CGRectGetWidth(image1Rect) / destAsptect;
-		} else {
-			image1Rect.origin.x = (CGRectGetWidth(image1Rect) - CGRectGetHeight(image1Rect) * destAsptect) / 2;
-			image1Rect.size.width = CGRectGetHeight(image1Rect) * destAsptect;
-		}
-		CIImage *destImage1 = [image1 imageByCroppingToRect:image1Rect];
-		tmp1 = [[UIImage alloc] initWithCIImage:destImage1];
-	}
-	
-	if (image2) {
-		/*
-		CGRect drawRect = CGRectMake(0, 0, size.width, size.height / 2);
-		CGRect image2Rect = image2.extent;
-		CGFloat scale;
-		if (_videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0) {
-			CGFloat image2Asptect = CGRectGetHeight(image2Rect) / CGRectGetWidth(image2Rect);
-			if (image2Asptect < destAsptect) {
-				scale = CGRectGetHeight(image2Rect) / CGRectGetHeight(drawRect);
-			} else {
-				scale = CGRectGetWidth(image2Rect) / CGRectGetWidth(drawRect);
-			}
-			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:scale orientation:UIImageOrientationLeft];
-		} else {
-			CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
-			if (image2Asptect < destAsptect) {
-				scale = CGRectGetHeight(image2Rect) / CGRectGetHeight(drawRect);
-			} else {
-				scale = CGRectGetWidth(image2Rect) / CGRectGetWidth(drawRect);
-			}
-			// tmp2 = [[UIImage alloc] initWithCIImage:image2];
-			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:scale orientation:UIImageOrientationUp];
-		}
-		 */
-		if (_videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0) {
-			tmp2 = [[UIImage alloc] initWithCIImage:image2 scale:1.0 orientation:UIImageOrientationLeft];
-		} else {
-			tmp2 = [[UIImage alloc] initWithCIImage:image2];
+- (void) onCatureAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer {
+	@synchronized (self) {
+		if (self.recordState == MultiRecordStateRecording) {
+			CFRetain(sampleBuffer);
+			dispatch_async(_writerQueue, ^(){
+				[self appendSampleBuffer:AVMediaTypeAudio CMSampleBufferRef:sampleBuffer];
+				CFRelease(sampleBuffer);
+			});
 		}
 	}
+}
+
+- (CGRect)getInRectWhenRender:(CIImage *)frame {
+	return self.feedView.viewBounds;
+}
+
+- (CGRect)getFromRectWhenRender:(CIImage *)frame {
+	if (!frame) {
+		return CGRectZero;
+	}
 	
-	UIGraphicsBeginImageContext(size);
-	[[UIColor colorWithWhite:0 alpha:1] setFill];
+	CGRect ret = frame.extent;
+	if ([self isSplitRecorder]) {
+		return ret;
+	}
 	
-	if (tmp2) {
-		CGRect drawRect = CGRectMake(0, 0, size.width, size.height / 2);
-		CGRect image2Rect = CGRectMake(0, 0, tmp2.size.width, tmp2.size.height);
-		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
-		if (image2Asptect < destAsptect) {
-			drawRect.origin.x = (CGRectGetWidth(drawRect) - CGRectGetHeight(drawRect) * image2Asptect) / 2;
-			drawRect.size.width = CGRectGetHeight(drawRect) * image2Asptect;
-		} else {
-			drawRect.origin.y = (CGRectGetHeight(drawRect) - CGRectGetWidth(drawRect) / image2Asptect) / 2;
-			drawRect.size.height = CGRectGetWidth(drawRect) / image2Asptect;
+	GLKViewWithBounds *feedView = self.feedView;
+	CGFloat fromAspect = ret.size.width / ret.size.height;
+	CGFloat inAspect = feedView.viewBounds.size.width / feedView.viewBounds.size.height;
+	if (fromAspect > inAspect) {
+		ret.origin.x += (ret.size.width - ret.size.height * inAspect) / 2.0;
+		ret.size.width = ret.size.height * inAspect;
+	} else {
+		ret.origin.y += (ret.size.height - ret.size.width / inAspect) / 2.0;
+		ret.size.height = ret.size.width / inAspect;
+	}
+	
+	return ret;
+}
+
+- (CIImage *)getRenderFrame:(CMSampleBufferRef)sampleBuffer {
+	CIImage *ret;
+	if ([self isSplitRecorder]) {
+		CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+		CIImage *captureFrame = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
+		
+		CIImage *sourceVideoFrame = nil;
+		@synchronized(self.lock) {
+			if (self.currentVideoBuffer) {
+				CVImageBufferRef videoBuffer = CMSampleBufferGetImageBuffer(self.currentVideoBuffer);
+				sourceVideoFrame = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)videoBuffer options:nil];
+			}
 		}
 		
-		[tmp2 drawInRect:drawRect];
+		ret = [self renderFrameLeft2:captureFrame right:sourceVideoFrame overlayColor:NO];
+	} else {
+		CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+		ret = [CIImage imageWithCVPixelBuffer:(CVPixelBufferRef)imageBuffer options:nil];
+	}
+	
+	return ret;
+}
+
+- (void)renderFrame:(CIImage *)frame {
+	if (!frame) {
+		return;
+	}
+	
+	CGRect inRect = [self getInRectWhenRender:frame];
+	CGRect fromRect = [self getFromRectWhenRender:frame];
+	
+	GLKViewWithBounds *feedView = self.feedView;
+	[feedView bindDrawable];
+	
+	if (_eaglContext != [EAGLContext currentContext]) {
+		[EAGLContext setCurrentContext:_eaglContext];
+	}
+	
+	glClearColor(0, 0, 0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	
+	if (frame) {
+		[_ciContext drawImage:frame inRect:inRect fromRect:fromRect];
+		[feedView display];
+	}
+}
+
+- (void)outputVideoFrame:(CIImage *)frame withPresentationTime:(CMTime)presentationTime {
+	CVPixelBufferRef renderBuffer = NULL;
+	CVPixelBufferPoolCreatePixelBuffer(NULL, _writerInputPixelBufferAdaptor.pixelBufferPool, &renderBuffer);
+	if (renderBuffer) {
+		CVPixelBufferLockBaseAddress(renderBuffer, 0);
+		[_ciContext render:frame toCVPixelBuffer:renderBuffer bounds:_feedView.viewBounds colorSpace:NULL];
+		CVPixelBufferUnlockBaseAddress(renderBuffer, 0);
 		
-		if (overlay) {
-			CGContextRef context = UIGraphicsGetCurrentContext();
-			[[UIColor colorWithWhite:0 alpha:0.8] setFill];
-			CGContextAddRect(context, CGRectMake(0, 0, size.width, size.height / 2));
-			CGContextDrawPath(context,kCGPathFill);
-		}
+		[self appendSampleBuffer:AVMediaTypeVideo CVPixelBufferRef:renderBuffer withPresentationTime:presentationTime];
+		CFRelease(renderBuffer);
 	}
-	
-	if (tmp1) {
-		CGRect drawRect = CGRectMake(0, size.height / 2, size.width, size.height / 2);
-		[tmp1 drawInRect:drawRect];
-	}
-	
-	UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
-	
-	return [[CIImage alloc] initWithImage:result];
 }
 
 - (CIImage *)renderFrameLeft2:(CIImage *)image1 right:(CIImage *)image2 overlayColor:(BOOL)overlay {
@@ -1263,7 +889,7 @@
 		
 		_reader.timeRange = CMTimeRangeMake(atTime, kCMTimePositiveInfinity);
 		
-		_assetVideoReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:self.videoTrackOutputSetting];
+		_assetVideoReaderOutput = [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack outputSettings:[VideoRecordSettings shareInstance].videoTrackOutputSetting];
 		[_reader addOutput:_assetVideoReaderOutput];
 		
 		if (![_reader startReading]) {
@@ -1367,7 +993,7 @@
 		_writer = [AVAssetWriter assetWriterWithURL:outputURL fileType:AVFileTypeMPEG4 error:&err];
 		
 		// 视频写
-		_videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoCompressionSettings];
+		_videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:[VideoRecordSettings shareInstance].videoCompressionSettings];
 		_videoWriterInput.expectsMediaDataInRealTime = YES;	//expectsMediaDataInRealTime 必须设为yes，需要从capture session 实时获取数据
 		
 		if ([_writer canAddInput:_videoWriterInput]) {
@@ -1376,10 +1002,10 @@
 			NSLog(@"AssetWriter videoInput append Failed");
 		}
 		
-		_writerInputPixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:_videoWriterInput sourcePixelBufferAttributes:self.adaptorSettings];
+		_writerInputPixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:_videoWriterInput sourcePixelBufferAttributes:[VideoRecordSettings shareInstance].adaptorSettings];
 		
 		// 音频写
-		_audioWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:self.audioCompressionSettings];
+		_audioWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:[VideoRecordSettings shareInstance].audioCompressionSettings];
 		_audioWriterInput.expectsMediaDataInRealTime = YES;
 		
 		if ([_writer canAddInput:_audioWriterInput]) {
