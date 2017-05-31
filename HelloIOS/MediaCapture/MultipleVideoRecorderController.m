@@ -11,6 +11,7 @@
 #import "DemoCameraPicker.h"
 // #import "ReadInJoyMediaPicker.h"
 #import "VideoRecordSettings.h"
+#import "VideoSplitManager.h"
 
 #pragma mark GLKViewWithBounds
 
@@ -43,95 +44,6 @@
 		CFRelease(self.buffer);
 		self.buffer = nil;
 	}
-}
-
-@end
-
-#pragma mark VideoSplitManager
-
-@interface VideoSplitManager : NSObject
-
-@property (nonatomic, strong) NSMutableArray *splits;
-
-@end
-
-@implementation VideoSplitManager
-
-- (instancetype)init {
-	if (self = [super init]) {
-		_splits = [[NSMutableArray alloc] init];
-	}
-	
-	return self;
-}
-
-- (BOOL)canDelete {
-	return [self.splits count] > 0;
-}
-
-- (void)pushSplit:(NSString *)path {
-	[_splits addObject:path];
-	
-	NSLog(@"pushSplit %@", path);
-}
-
-- (NSString *)popSplit {
-	NSString *split = nil;
-	if ([self canDelete]) {
-		split = [_splits objectAtIndex:(_splits.count - 1)];
-		[_splits removeObject:split];
-		
-		NSFileManager *mgr = [NSFileManager defaultManager];
-		[mgr removeItemAtPath:split error:nil];
-		
-		NSLog(@"popSplit %@", split);
-	}
-	
-	return split;
-}
-
-- (NSUInteger)lastSplitNumber {
-	return _splits.count - 1;
-}
-
-- (NSString *)getNextRecordFilename {
-	NSUInteger i = _splits.count;
-	
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-	NSString *outpathURL = paths[0];
-	NSFileManager *mgr = [NSFileManager defaultManager];
-	[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
-	NSString *filename = [NSString stringWithFormat:@"split_video_%ld.mp4", i];
-	outpathURL = [outpathURL stringByAppendingPathComponent:filename];
-	
-	return outpathURL;
-}
-
-- (NSString *)getLastRecordFilename {
-	if (_splits.count == 0)
-		return nil;
-	
-	NSUInteger i = _splits.count - 1;
-	
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-	NSString *outpathURL = paths[0];
-	NSFileManager *mgr = [NSFileManager defaultManager];
-	[mgr createDirectoryAtPath:outpathURL withIntermediateDirectories:YES attributes:nil error:nil];
-	NSString *filename = [NSString stringWithFormat:@"split_video_%ld.mp4", i];
-	outpathURL = [outpathURL stringByAppendingPathComponent:filename];
-	
-	return outpathURL;
-}
-
-- (NSArray *)getAllSplits {
-	return _splits;
-}
-
-- (NSString *)allocNewSplit {
-	NSString *file = [self getNextRecordFilename];
-	[self pushSplit:file];
-	
-	return file;
 }
 
 @end
@@ -189,8 +101,6 @@
 @property (nonatomic, strong) NSString *exportVideoPath;
 @property (nonatomic, strong) NSString *sourceVideoPath;
 
-@property (nonatomic, strong) VideoSplitManager *videoSplitManager;
-
 @property (nonatomic) CGFloat cost;
 @property (nonatomic) CGFloat count;
 
@@ -227,8 +137,6 @@
 	//self.lock = [[NSLock alloc] init];
 	self.lock = [NSObject new];
 	
-	_videoSplitManager = [[VideoSplitManager alloc] init];
-	
 	_videoSnapshots = [NSMutableArray array];
 	
 	self.isFirstFrame = YES;
@@ -259,6 +167,8 @@
 	}
 	
 	[self.videoSnapshots removeAllObjects];
+	
+	[[VideoSplitManager shareInstance] clear];
 }
 
 - (BOOL)isSplitRecorder {
@@ -398,7 +308,7 @@
 	
 	@synchronized (self) {
 		// 加载视频录制写控制器
-		[self setupAssetWriter:[_videoSplitManager allocNewSplit]];
+		[self setupAssetWriter:[[VideoSplitManager shareInstance] allocNewSplit]];
 		
 		// 启动视频帧处理
 		if ([self isSplitRecorder]) {
@@ -465,16 +375,16 @@
 		return -1;
 	}
 	
-	if (![_videoSplitManager canDelete]) {
+	if (![[VideoSplitManager shareInstance] canDelete]) {
 		return -1;
 	}
 	
 	// 删除最后一个分段
-	[_videoSplitManager popSplit];
+	[[VideoSplitManager shareInstance] popSplit];
 	
 	if ([self isSplitRecorder]) {
 		// 没有分段时，标记为开始帧
-		if (![_videoSplitManager canDelete]) {
+		if (![[VideoSplitManager shareInstance] canDelete]) {
 			self.isFirstFrame = YES;
 		}
 		
@@ -544,9 +454,9 @@
             @synchronized (self) {
                 if (self.recordState == MultiRecordStateRecording) {
                     [self appendSampleBuffer:AVMediaTypeVideo CMSampleBufferRef:sampleBuffer];
-                    CFRelease(sampleBuffer);
                 }
             }
+			CFRelease(sampleBuffer);
         });
     }
 
@@ -1072,7 +982,7 @@
 		return;
 	}
 	
-	NSArray<NSString *> * videoFiles = [_videoSplitManager getAllSplits];
+	NSArray<NSString *> * videoFiles = [[VideoSplitManager shareInstance] getAllSplits];
 	NSString *audioFromVideoFile = self.sourceVideoPath;
 	
 	// 创建拼接工程
@@ -1189,7 +1099,7 @@
 		return;
 	}
 	
-	NSArray<NSString *> * videoFiles = [_videoSplitManager getAllSplits];
+	NSArray<NSString *> * videoFiles = [[VideoSplitManager shareInstance] getAllSplits];
 	
 	// 创建拼接工程
 	AVMutableComposition* mc = [[AVMutableComposition alloc] init];
