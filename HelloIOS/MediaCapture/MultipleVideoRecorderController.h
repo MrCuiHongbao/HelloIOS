@@ -38,6 +38,9 @@ typedef NS_ENUM(NSInteger, MultiRecordState) {
 
 @interface MultipleVideoRecorderController : NSObject
 
+// 最长录制时间，分屏录制时等于源视频的时长，全屏录制时默认是30s
+@property (nonatomic) CGFloat maxRecordDuration;
+
 @property (nonatomic, weak) id<MultipleVideoRecorderControllerDelegate> delegate;
 
 - (instancetype)init;

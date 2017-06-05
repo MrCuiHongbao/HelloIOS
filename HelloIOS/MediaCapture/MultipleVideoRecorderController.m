@@ -85,8 +85,6 @@
 @property (nonatomic, strong) AVURLAsset *videoAsset;
 @property (nonatomic, strong) NSTimer *progressUpdateTimer;
 @property (nonatomic, assign) CGFloat sourceVideoFrameTime;
-@property (nonatomic, assign) CGFloat sourceVideoSumTime;
-@property (nonatomic, assign) CGFloat sourceVideoLeftTime;
 @property (nonatomic) CGAffineTransform videoTransform;
 @property (nonatomic, assign) BOOL isFirstFrame;
 @property (nonatomic, assign) BOOL canHandleVideo;
@@ -111,6 +109,12 @@
 @property (nonatomic, strong) CameraOutputAbstractLayer *cameraOutput;
 
 @property (nonatomic) BOOL canWriterSplitVideo;
+
+@property (nonatomic) CMTime startRecordTime;
+
+@property (nonatomic) CMTime currentSplitRecordTime;
+
+@property (nonatomic) CMTime currentRecordTime;
 
 @end
 
@@ -145,6 +149,10 @@
     [self initMediaPicker:isSingle];
 	
 	self.isFullscreenRecord = isSingle;
+	
+	self.maxRecordDuration = 30;
+	self.startRecordTime = kCMTimeZero;
+	self.currentRecordTime = kCMTimeZero;
 	
 	self.recordState = MultiRecordStateInit;
 }
@@ -278,11 +286,11 @@
 }
 
 - (CGFloat)recordDuration {
-	return self.sourceVideoSumTime;
+	return self.maxRecordDuration;
 }
 
 - (CGFloat)currentDuration {
-	return self.sourceVideoSumTime - self.sourceVideoLeftTime;
+	return CMTimeGetSeconds(self.currentRecordTime);
 }
 
 - (void)toggleRecord {
@@ -291,7 +299,7 @@
 	} else if (self.recordState == MultiRecordStateRecording) {
 		[self stopRecord:MultiRecordStateReady];
 	} else {
-		NSLog(@"Neither ready nor recording, state is %ld", self.recordState);
+		NSLog(@"Neither ready nor recording, state is %d", self.recordState);
 	}
 }
 
@@ -318,9 +326,10 @@
 		// 初始化进度回调定时器
 		_progressUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:1.0/60 repeats:YES block:^(NSTimer *timer){
 			if ([self.delegate respondsToSelector:@selector(progressUpdate:duration:)]) {
-				CGFloat current = self.sourceVideoSumTime - self.sourceVideoLeftTime;
-				CGFloat duration = self.sourceVideoSumTime;
-				[self.delegate progressUpdate:current duration:duration];
+				CMTime currentTime = CMTimeAdd(self.currentRecordTime, self.currentSplitRecordTime);
+				CGFloat current = CMTimeGetSeconds(currentTime);
+				NSLog(@"current record time %f", current);
+				[self.delegate progressUpdate:current duration:self.maxRecordDuration];
 			}
 		}];
 		[_progressUpdateTimer fire];
@@ -343,6 +352,11 @@
 			[self stopVideoExtrace];
 			[self setupVideoExtracrTimer];
 		}
+		
+		// 更新录制时长
+		self.currentRecordTime = CMTimeAdd(self.currentRecordTime, self.currentSplitRecordTime);
+		self.startRecordTime = kCMTimeZero;
+		self.currentSplitRecordTime = kCMTimeZero;
 		
 		// 释放进度回调定时器
 		[_progressUpdateTimer invalidate];
@@ -442,6 +456,11 @@
             @synchronized (self) {
                 if (self.recordState == MultiRecordStateRecording) {
                     if (self.canWriterSplitVideo) {
+						if (CMTimeCompare(self.startRecordTime, kCMTimeZero) == 0) {
+							self.startRecordTime = presentationTime;
+						}
+						self.currentSplitRecordTime = CMTimeSubtract(presentationTime, self.startRecordTime);
+						
                         [self outputVideoFrame:destImage withPresentationTime:presentationTime];
                         self.canWriterSplitVideo = NO;
                     }
@@ -453,6 +472,12 @@
         dispatch_async(_writerQueue, ^() {
             @synchronized (self) {
                 if (self.recordState == MultiRecordStateRecording) {
+					CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+					if (CMTimeCompare(self.startRecordTime, kCMTimeZero) == 0) {
+						self.startRecordTime = presentationTime;
+					}
+					self.currentSplitRecordTime = CMTimeSubtract(presentationTime, self.startRecordTime);
+					
                     [self appendSampleBuffer:AVMediaTypeVideo CMSampleBufferRef:sampleBuffer];
                 }
             }
@@ -655,7 +680,7 @@
 	
 	// fit
 	if (image2) {
-		// 图片没有旋转
+		// 图片没有旋转信息
 		BOOL noRotate = _videoTransform.a == 1 && _videoTransform.d == 1 && _videoTransform.b == 0 && _videoTransform.c == 0;
 		
 		CGRect drawRect = CGRectMake(0, splitHeight, viewWidth, splitHeight);
@@ -666,9 +691,10 @@
 			CGContextRotateCTM(context, M_PI_2);
 			CGContextTranslateCTM(context, -(viewHeight >> 1), -(viewWidth >> 1));
 			
-			image2Rect = CGRectMake(0, 0, CGRectGetHeight(image2Rect), CGRectGetWidth(image2Rect));
+			drawRect = CGRectMake(CGRectGetMinY(drawRect), CGRectGetMinX(drawRect), CGRectGetHeight(drawRect), CGRectGetWidth(drawRect));
 		}
 		
+		destAsptect = (CGFloat)CGRectGetWidth(drawRect) / CGRectGetHeight(drawRect);
 		CGFloat image2Asptect = CGRectGetWidth(image2Rect) / CGRectGetHeight(image2Rect);
 		if (image2Asptect < destAsptect) {
 			drawRect.origin.x = (CGRectGetWidth(drawRect) - CGRectGetHeight(drawRect) * image2Asptect) / 2;
@@ -676,10 +702,6 @@
 		} else {
 			drawRect.origin.y = (CGRectGetHeight(drawRect) - CGRectGetWidth(drawRect) / image2Asptect) / 2;
 			drawRect.size.height = CGRectGetWidth(drawRect) / image2Asptect;
-		}
-		
-		if (noRotate) {
-			drawRect = CGRectMake(CGRectGetMinY(drawRect), CGRectGetMinX(drawRect), CGRectGetHeight(drawRect), CGRectGetWidth(drawRect));
 		}
 		
 		CIImage *finalImage;
@@ -813,8 +835,7 @@
 		CMTime duration = [asset duration];
 		CGFloat totalTime = CMTimeGetSeconds(duration);
 		_sourceVideoFrameTime = 1 / videoTrack.nominalFrameRate;
-		_sourceVideoSumTime = totalTime;
-		[self updateVideoLeftTime:atTime];
+		_maxRecordDuration = totalTime;
 		
 		_reader.timeRange = CMTimeRangeMake(atTime, kCMTimePositiveInfinity);
 		
@@ -892,8 +913,6 @@
 						self.isFirstFrame = NO;
 					}
 				}
-				
-				[self updateVideoLeftTime:CMSampleBufferGetPresentationTimeStamp(videoBuffer)];
 			}
 		}
 	} else {
@@ -952,14 +971,6 @@
 	}
 }
 
-- (void)updateVideoLeftTime:(CMTime)presentTime {
-	CMTime durationTime = [_videoAsset duration];
-	CGFloat leftSeconds = CMTimeGetSeconds(CMTimeSubtract(durationTime, presentTime));
-	self.sourceVideoLeftTime = leftSeconds;
-	
-	// NSLog(@"left time is %f", self.sourceVideoLeftTime);
-}
-
 - (void)stopAssetWriter {
 	if(_writer && _writer.status == AVAssetWriterStatusWriting) {
 		[_writer finishWritingWithCompletionHandler:^{
@@ -973,7 +984,7 @@
 	NSLog(@"record cost %f", self.cost / self.count);
 	
 	if (self.recordState != MultiRecordStateFinish && self.recordState != MultiRecordStateReady) {
-		NSLog(@"export failure. record state is %ld", self.recordState);
+		NSLog(@"export failure. record state is %d", self.recordState);
 		return;
 	}
 	
