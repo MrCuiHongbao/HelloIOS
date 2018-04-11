@@ -27,6 +27,7 @@
 		1E9F87791EDD715E00E33499 /* MultipleVideoRecorderController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9F87771EDD715E00E33499 /* MultipleVideoRecorderController.m */; };
 		1E9F8A9C1EDEDA9D00E33499 /* VideoSplitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9F8A9B1EDEDA9D00E33499 /* VideoSplitManager.m */; };
 		1EA426321D5499AD008B96A7 /* EntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA426311D5499AD008B96A7 /* EntryCell.m */; };
+		1EC1FFC91F43F36100A6DC0B /* PinTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC1FFC81F43F36100A6DC0B /* PinTableViewController.m */; };
 		1EC2E5F51CC2662600A5FC44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F41CC2662600A5FC44 /* main.m */; };
 		1EC2E5F81CC2662600A5FC44 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5F71CC2662600A5FC44 /* AppDelegate.m */; };
 		1EC2E5FB1CC2662600A5FC44 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EC2E5FA1CC2662600A5FC44 /* ViewController.m */; };
@@ -83,6 +84,8 @@
 		1E9F8A9B1EDEDA9D00E33499 /* VideoSplitManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = VideoSplitManager.m; path = MediaCapture/VideoSplitManager.m; sourceTree = "<group>"; };
 		1EA426301D5499AD008B96A7 /* EntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryCell.h; sourceTree = "<group>"; };
 		1EA426311D5499AD008B96A7 /* EntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EntryCell.m; sourceTree = "<group>"; };
+		1EC1FFC71F43F36100A6DC0B /* PinTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PinTableViewController.h; sourceTree = "<group>"; };
+		1EC1FFC81F43F36100A6DC0B /* PinTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PinTableViewController.m; sourceTree = "<group>"; };
 		1EC2E5F01CC2662600A5FC44 /* HelloIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1EC2E5F41CC2662600A5FC44 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1EC2E5F61CC2662600A5FC44 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -154,6 +157,8 @@
 				1E6A5E381EB87E4C00E584EB /* SplitRecordViewController.m */,
 				1E9F86171ED9587C00E33499 /* SingleRecordViewController.h */,
 				1E9F86181ED9587C00E33499 /* SingleRecordViewController.m */,
+				1EC1FFC71F43F36100A6DC0B /* PinTableViewController.h */,
+				1EC1FFC81F43F36100A6DC0B /* PinTableViewController.m */,
 			);
 			name = Demo;
 			sourceTree = "<group>";
@@ -319,6 +324,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1E9F8A9C1EDEDA9D00E33499 /* VideoSplitManager.m in Sources */,
+				1EC1FFC91F43F36100A6DC0B /* PinTableViewController.m in Sources */,
 				34351AD91EC5B98400E19B28 /* TableViewController.m in Sources */,
 				1E7D3C0D1EB6DA2A00FCE97A /* UISegmentProgressBar.m in Sources */,
 				1E27C86F1EB577CB00405D68 /* RecordController.m in Sources */,

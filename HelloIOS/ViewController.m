@@ -64,7 +64,8 @@
 				   @"UISegmentProgressBarViewController",
 				   @"SplitRecordViewController",
 				   @"FlipTestViewController",
-				   @"SingleRecordViewController"];
+				   @"SingleRecordViewController",
+				   @"PinTableViewController"];
 }
 
 - (void)clickBtn:(id)sender
